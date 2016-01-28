@@ -186,7 +186,7 @@ Reset_Handler    PROC
                  EXPORT  Reset_Handler             [WEAK]
         ;IMPORT  SystemInit
         IMPORT  __main
-				IMPORT Kalmanfilter_asm
+				IMPORT	testBench_asm
 
 								 ; Code to allow the use of fp operations
 								 LDR.W R0, =0xE000ED88
@@ -196,8 +196,8 @@ Reset_Handler    PROC
 								 DSB
 								 ISB
 
-                 ;LDR     R0, =Kalmanfilter_asm
-								 LDR		 R0, =__main
+                 LDR     R0, =testBench_asm
+								 ;LDR		 R0, =__main
                  BLX     R0
 								 NOP
                  ENDP

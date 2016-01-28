@@ -1,0 +1,48 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ; Luke Soldano, Xavier Agostini (C) 2016
+    2 00000000         ; McGill University, ECSE 426, Lab One
+    3 00000000         ; Assembly code to implemenet a Kalmann filter
+    4 00000000         
+    5 00000000                 AREA             myData, CODE, READONLY
+    6 00000000                 EXPORT           kalmanStruct
+    7 00000000 01 02 03 
+              04 05    kalmanStruct
+                               DCB              1,2,3,4,5
+    8 00000005         
+    9 00000005                 END
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\objects\arrayinitializer.d -o.\objects\arrayinitializer.o -IC
+:\MP426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\
+4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSI
+S\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --predef
+ine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\arrayinit
+ializer.lst Sources\arrayInitializer.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+kalmanStruct 00000000
+
+Symbol: kalmanStruct
+   Definitions
+      At line 7 in file Sources\arrayInitializer.s
+   Uses
+      At line 6 in file Sources\arrayInitializer.s
+Comment: kalmanStruct used once
+myData 00000000
+
+Symbol: myData
+   Definitions
+      At line 5 in file Sources\arrayInitializer.s
+   Uses
+      None
+Comment: myData unused
+2 symbols
+335 symbols in table

@@ -30,17 +30,74 @@ ARM Macro Assembler    Page 1
    21 00000000         ; Filter will load these values into registers (S4,S5,S6
                        ,S7,S8)
    22 00000000         
-   23 00000000         
-   24 00000000         ; Return from branch
-   25 00000000 4770            BX               LR
-   26 00000002                 END
+   23 00000000         ; Initialize q,r,x,p,k
+   24 00000000         ; Load kalman state values into proper fp registers
+   25 00000000 ED93 2A00       VLDR.f32         S4, [R3, #0] ; float q
+   26 00000004 EDD3 2A01       VLDR.f32         S5, [R3, #4] ; float r 
+   27 00000008 ED93 3A02       VLDR.f32         S6, [R3, #8] ; float x
+   28 0000000C EDD3 3A03       VLDR.f32         S7, [R3, #12] ; float p
+   29 00000010 ED93 4A04       VLDR.f32         S8, [R3, #16] ; float k
+   30 00000014         
+   31 00000014         ; Load input array
+   32 00000014         ; VLDR.f32 S9, [R0, #0] ; load first index of input arra
+                       y, this is the measurement value
+   33 00000014 EEF0 4A43       VMOV.f32         S9, S6      ; load first index 
+                                                            of input array, thi
+                                                            s is the measuremen
+                                                            t value
+   34 00000018         
+   35 00000018         
+   36 00000018         ; Find values of p and k
+   37 00000018 EE73 3A82       VADD.f32         S7, S7, S4  ; p = p + q 
+   38 0000001C EE33 5AA2       VADD.f32         S10, S7, S5 ; p + r 
+   39 00000020 EE83 4A85       VDIV.f32         S8, S7, S10 ; k = p / (p + r)
+   40 00000024         
+   41 00000024         ; Check for division overflow
+   42 00000024         ; LDR ASPR, FPSCR
+   43 00000024         ; TODO: Perform check
+   44 00000024         
+   45 00000024         ; Find value of x
+   46 00000024 EE74 5AC3       VSUB.f32         S11, S9, S6 ; (measurement - x)
+                                                            
+   47 00000028 EE24 6A25       VMUL.f32         S12, S8, S11 ; k * (measurement
+                                                             - x)
+   48 0000002C         
+   49 0000002C         ; Check for multiplication overflow
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   50 0000002C         ; LDR ASPR, FPSCR
+   51 0000002C         ; TODO: Perform check
+   52 0000002C         
+   53 0000002C         ; Finish operation on x
+   54 0000002C EE33 3A06       VADD.f32         S6, S6, S12 ; x = x + k *(measu
+                                                            rement - x)
+   55 00000030         
+   56 00000030         ; Find value of p
+   57 00000030 EEF7 5A00       VLDR.f32         S11, =1.0
+   58 00000034 EE35 5AC4       VSUB.f32         S10, S11, S8 ; (1 - k)
+   59 00000038 EE65 3A23       VMUL.f32         S7, S10, S7 ; p = (1 - k) * p
+   60 0000003C         
+   61 0000003C         ; Check for multiplication overflow
+   62 0000003C         ; LDR ASPR, FPSCR
+   63 0000003C         ; TODO: Perform check
+   64 0000003C         
+   65 0000003C         ; Load x into return register
+   66 0000003C EEB0 0A43       VMOV.f32         S0, S6
+   67 00000040         
+   68 00000040         ; Return from branch
+   69 00000040 4770            BX               LR
+   70 00000042                 END
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=.\objects\kalmanfilter_asm.d -o.\objects\kalmanfilter_asm.o -IC
-:\Test\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.0\
-CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\Devi
-ce\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --predefine="_
-RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\kalmanfilter_as
-m.lst Kalmanfilter_asm.s
+:\MP426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\
+4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSI
+S\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --predef
+ine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\kalmanfil
+ter_asm.lst Kalmanfilter_asm.s
 
 
 

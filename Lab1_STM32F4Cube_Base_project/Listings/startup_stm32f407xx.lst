@@ -496,7 +496,7 @@ ARM Macro Assembler    Page 8
 ]
   187 00000000         ;IMPORT  SystemInit
   188 00000000                 IMPORT           __main
-  189 00000000                 IMPORT           Kalmanfilter_asm
+  189 00000000                 IMPORT           testBench_asm
   190 00000000         
   191 00000000         ; Code to allow the use of fp operations
   192 00000000 F8DF 0038       LDR.W            R0, =0xE000ED88
@@ -506,8 +506,8 @@ ARM Macro Assembler    Page 8
   196 0000000C F3BF 8F4F       DSB
   197 00000010 F3BF 8F6F       ISB
   198 00000014         
-  199 00000014         ;LDR     R0, =Kalmanfilter_asm
-  200 00000014 480A            LDR              R0, =__main
+  199 00000014 480A            LDR              R0, =testBench_asm
+  200 00000016         ;LDR   R0, =__main
   201 00000016 4780            BLX              R0
   202 00000018 BF00            NOP
   203 0000001A                 ENDP
@@ -891,11 +891,11 @@ ARM Macro Assembler    Page 14
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=.\objects\startup_stm32f407xx.d -o.\objects\startup_stm32f407xx
-.o -IC:\Test\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\
-4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSI
-S\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --predef
-ine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\startup_s
-tm32f407xx.lst RTE\Device\STM32F407VGTx\startup_stm32f407xx.s
+.o -IC:\MP426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\
+CMSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Driver
+s\CMSIS\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --
+predefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\sta
+rtup_stm32f407xx.lst RTE\Device\STM32F407VGTx\startup_stm32f407xx.s
 
 
 
@@ -1974,22 +1974,14 @@ Comment: __Vectors_Size used once
 ARM Macro Assembler    Page 1 Alphabetic symbol ordering
 External symbols
 
-Kalmanfilter_asm 00000000
-
-Symbol: Kalmanfilter_asm
-   Definitions
-      At line 189 in file RTE\Device\STM32F407VGTx\startup_stm32f407xx.s
-   Uses
-      None
-Comment: Kalmanfilter_asm unused
 __main 00000000
 
 Symbol: __main
    Definitions
       At line 188 in file RTE\Device\STM32F407VGTx\startup_stm32f407xx.s
    Uses
-      At line 200 in file RTE\Device\STM32F407VGTx\startup_stm32f407xx.s
-Comment: __main used once
+      None
+Comment: __main unused
 __use_two_region_memory 00000000
 
 Symbol: __use_two_region_memory
@@ -1998,5 +1990,13 @@ Symbol: __use_two_region_memory
    Uses
       None
 Comment: __use_two_region_memory unused
+testBench_asm 00000000
+
+Symbol: testBench_asm
+   Definitions
+      At line 189 in file RTE\Device\STM32F407VGTx\startup_stm32f407xx.s
+   Uses
+      At line 199 in file RTE\Device\STM32F407VGTx\startup_stm32f407xx.s
+Comment: testBench_asm used once
 3 symbols
 448 symbols in table

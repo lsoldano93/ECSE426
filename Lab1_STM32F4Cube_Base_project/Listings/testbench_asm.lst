@@ -1,0 +1,108 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ; Luke Soldano, Xavier Agostini (C) 2016
+    2 00000000         ; McGill University, ECSE 426, Lab One
+    3 00000000         ; Assembly code to implemenet a Kalmann filter
+    4 00000000         
+    5 00000000                 AREA             fn, CODE, READONLY
+    6 00000000                 IMPORT           Kalmanfilter_asm
+    7 00000000                 IMPORT           kalmanStruct
+    8 00000000                 EXPORT           testBench_asm
+    9 00000000         testBench_asm
+   10 00000000         ; Push return link onto stack
+   11 00000000 B500            PUSH             {R14}
+   12 00000002         
+   13 00000002         ; Initialize q,r,x,p,k
+   14 00000002         
+   15 00000002 ED9F 2A0A       VLDR.f32         S4, =0.0    ; float q
+   16 00000006 EDDF 2A0A       VLDR.f32         S5, =0.1    ; float r 
+   17 0000000A ED9F 3A08       VLDR.f32         S6, =0.0    ; float x
+   18 0000000E EDDF 3A08       VLDR.f32         S7, =0.1    ; float p
+   19 00000012 ED9F 4A06       VLDR.f32         S8, =0.0    ; float k
+   20 00000016 4B07            LDR              R3, =testArray ;load address
+   21 00000018 EC83 2A05       VSTM             R3, {S4-S8}
+   22 0000001C         
+   23 0000001C         ; Run kalman filter
+   24 0000001C 4806            LDR              R0, =Kalmanfilter_asm
+   25 0000001E 4780            BLX              R0
+   26 00000020         
+   27 00000020         ; Pop return link off of stack
+   28 00000020 F85D EB04       POP              {R14}
+   29 00000024         
+   30 00000024                 ALIGN
+   31 00000024 01 02 03 
+              04 05    testArray
+                               DCB              1,2,3,4,5
+   32 00000029         ; Return from branch
+   33 00000029 00 4770         BX               LR
+   34 0000002C                 END
+              00000000 
+              3DCCCCCD 
+              00000000 
+              00000000 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\objects\testbench_asm.d -o.\objects\testbench_asm.o -IC:\MP42
+6_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.0\
+CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\Devi
+ce\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --predefine="_
+RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\testbench_asm.l
+st Sources\testBench_asm.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+fn 00000000
+
+Symbol: fn
+   Definitions
+      At line 5 in file Sources\testBench_asm.s
+   Uses
+      None
+Comment: fn unused
+testArray 00000024
+
+Symbol: testArray
+   Definitions
+      At line 31 in file Sources\testBench_asm.s
+   Uses
+      At line 20 in file Sources\testBench_asm.s
+Comment: testArray used once
+testBench_asm 00000000
+
+Symbol: testBench_asm
+   Definitions
+      At line 9 in file Sources\testBench_asm.s
+   Uses
+      At line 8 in file Sources\testBench_asm.s
+Comment: testBench_asm used once
+3 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+Kalmanfilter_asm 00000000
+
+Symbol: Kalmanfilter_asm
+   Definitions
+      At line 6 in file Sources\testBench_asm.s
+   Uses
+      At line 24 in file Sources\testBench_asm.s
+Comment: Kalmanfilter_asm used once
+kalmanStruct 00000000
+
+Symbol: kalmanStruct
+   Definitions
+      At line 7 in file Sources\testBench_asm.s
+   Uses
+      None
+Comment: kalmanStruct unused
+2 symbols
+341 symbols in table
