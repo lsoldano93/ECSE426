@@ -1,0 +1,50 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ; Luke Soldano, Xavier Agostini (C) 2016
+    2 00000000         ; McGill University, ECSE 426, Lab One
+    3 00000000         ; Assembly code to initialize arrary
+    4 00000000         
+    5 00000000                 AREA             fn, DATA, READWRITE
+    6 00000000                 EXPORT           dummyArray
+    7 00000000 00000001 
+              00000002 
+              00000003 
+              00000004 
+              00000005 dummyArray
+                               DCD              1,2,3,4,5
+    8 00000014                 END
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\objects\array1.d -o.\objects\array1.o -IC:\Project\Project\MP
+426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5.
+0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\De
+vice\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --predefine=
+"_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\array1.lst So
+urces\array1.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+dummyArray 00000000
+
+Symbol: dummyArray
+   Definitions
+      At line 7 in file Sources\array1.s
+   Uses
+      At line 6 in file Sources\array1.s
+Comment: dummyArray used once
+fn 00000000
+
+Symbol: fn
+   Definitions
+      At line 5 in file Sources\array1.s
+   Uses
+      None
+Comment: fn unused
+2 symbols
+335 symbols in table

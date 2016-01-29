@@ -432,6 +432,11 @@
               <FileType>2</FileType>
               <FilePath>.\testBench_asm.s</FilePath>
             </File>
+            <File>
+              <FileName>array1.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Sources\array1.s</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
