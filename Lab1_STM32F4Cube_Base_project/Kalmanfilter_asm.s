@@ -6,7 +6,7 @@
 	EXPORT Kalmanfilter_asm
 Kalmanfilter_asm
 
-; ***Begin code for Kalmann filter***
+; **************************************************************************************** TALK TO TA ABOUT CHECK FOR OVERFLOW ETC
 
 ; Filter takes four input paramaters
 ; 1. A pointer to the input data array
@@ -16,6 +16,8 @@ Kalmanfilter_asm
 
 ; For the function return value, registers R0/R1 & S0/S1 
 ; are used for integer and floating-point results respectively
+
+; Register inputs (Input array, output array, array length, kalman struct address)
 
 ; Filter will hold its state as a quintuple (q,r,x,p,k) - all fp #'s
 ; Filter will load these values into registers (S4,S5,S6,S7,S8)
@@ -27,11 +29,15 @@ Kalmanfilter_asm
 	VLDR.f32 S6, [R3, #8] ; float x
 	VLDR.f32 S7, [R3, #12] ; float p
 	VLDR.f32 S8, [R3, #16] ; float k
-	
+
+; Initialize loop counter
+	MOV R4, #0
+
+; Start loop
+loop 
+
 ; Load input array
-;	VLDR.f32 S9, [R0, #0] ; load first index of input array, this is the measurement value
-	VMOV.f32 S9, S6 ; load first index of input array, this is the measurement value
-	
+	VLDR.f32 S9, [R0, #0] ; load proper index of input array to S9 (measurement value)	
 	
 ; Find values of p and k
 	VADD.f32 S7, S7, S4 ; p = p + q 
@@ -62,8 +68,19 @@ Kalmanfilter_asm
 	; LDR	ASPR, FPSCR
 	; TODO: Perform check
 	
-; Load x into return register
+; Load x into return register and update output array and struct values
 	VMOV.f32 S0, S6
+	VSTM R3, {S4-S8}
+	VSTM R1, S6 ; TODO Fix increments
+	
+; Increment R0 & R1 addresses to return proper pointer for next iteration
+	ADD R0, R0, #4
+	ADD R1, R1, #4
+	
+; Determine whether or not loop should continue
+	ADD R4, R4, #1
+	CMP R4, R2
+	BLT loop
 	
 ; Return from branch
 	BX LR

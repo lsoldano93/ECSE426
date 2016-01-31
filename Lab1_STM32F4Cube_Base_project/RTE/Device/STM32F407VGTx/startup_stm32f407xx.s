@@ -185,7 +185,7 @@ __Vectors_Size  EQU  __Vectors_End - __Vectors
 Reset_Handler    PROC
                  EXPORT  Reset_Handler             [WEAK]
         ;IMPORT  SystemInit
-        IMPORT  __main
+        IMPORT  main
 				IMPORT	testBench_asm
 
 								 ; Code to allow the use of fp operations
@@ -196,9 +196,9 @@ Reset_Handler    PROC
 								 DSB
 								 ISB
 
-                 LDR     R0, =testBench_asm
-								 ;LDR		 R0, =__main
-                 BLX     R0
+                 ;LDR     R12, =testBench_asm
+								 LDR		 R12, =main
+                 BLX     R12
 								 NOP
                  ENDP
 

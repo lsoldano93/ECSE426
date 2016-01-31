@@ -10,51 +10,85 @@ ARM Macro Assembler    Page 1
     4 00000000         
     5 00000000                 AREA             fn, CODE, READONLY
     6 00000000                 IMPORT           Kalmanfilter_asm
-    7 00000000                 IMPORT           dummyArray
-    8 00000000                 EXPORT           testBench_asm
-    9 00000000         testBench_asm
-   10 00000000         
-   11 00000000         ; Push return link onto stack
-   12 00000000 B500            PUSH             {R14}
-   13 00000002         
-   14 00000002         ; Initialize q,r,x,p,k (Pointer to Kalman Struct)
-   15 00000002 ED9F 2A08       VLDR.f32         S4, =0.0    ; float q
-   16 00000006 EDDF 2A08       VLDR.f32         S5, =0.1    ; float r 
-   17 0000000A ED9F 3A06       VLDR.f32         S6, =0.0    ; float x
-   18 0000000E EDDF 3A06       VLDR.f32         S7, =0.1    ; float p
-   19 00000012 ED9F 4A04       VLDR.f32         S8, =0.0    ; float k
-   20 00000016 4B05            LDR              R3, =dummyArray ;load address o
-                                                            f dummy matrix arra
-                                                            y
-   21 00000018 EC83 2A05       VSTM             R3, {S4-S8} ; R3 acts as a poin
-                                                            ter to the struct 
-   22 0000001C         
-   23 0000001C         ; TODO: Need to pass in the following parameters to the 
-                       kalman filter
+    7 00000000                 IMPORT           dummyInput
+    8 00000000                 IMPORT           dummyOutput
+    9 00000000                 IMPORT           dummyStruct
+   10 00000000                 EXPORT           testBench_asm
+   11 00000000         testBench_asm
+   12 00000000         
+   13 00000000         ; Push return link onto stack
+   14 00000000 B500            PUSH             {R14}
+   15 00000002         
+   16 00000002         ; Give values to input array for processing **(Change th
+                       ese values to test output)
+   17 00000002 ED9F 2A17       VLDR.f32         S4, =0.1
+   18 00000006 EDDF 2A16       VLDR.f32         S5, =0.1
+   19 0000000A ED9F 3A16       VLDR.f32         S6, =0.2
+   20 0000000E EDDF 3A16       VLDR.f32         S7, =0.3
+   21 00000012 ED9F 4A16       VLDR.f32         S8, =0.4
+   22 00000016 4816            LDR              R0, =dummyInput ;load address o
+                                                            f dummy struct
+   23 00000018 EC80 2A05       VSTM             R0, {S4-S8} ; R0 acts as pointe
+                                                            r to input array 
    24 0000001C         
-   25 0000001C         ; 1: Pointer to input data array
-   26 0000001C         
-   27 0000001C         ; 2: Pointer to filtered data array
-   28 0000001C         ; 3: Array length
-   29 0000001C         ; Run kalman filter
-   30 0000001C 4804            LDR              R0, =Kalmanfilter_asm
-   31 0000001E 4780            BLX              R0
-   32 00000020         
-   33 00000020         ; Pop return link off of stack
-   34 00000020 F85D EB04       POP              {R14}
-   35 00000024         
-                       
+   25 0000001C         ; Allocate memory for output array for values to be plac
+                       ed in by filter
+   26 0000001C ED9F 2A15       VLDR.f32         S4, =0.0
+   27 00000020 EDDF 2A14       VLDR.f32         S5, =0.0
+   28 00000024 ED9F 3A13       VLDR.f32         S6, =0.0
+   29 00000028 EDDF 3A12       VLDR.f32         S7, =0.0
+   30 0000002C ED9F 4A11       VLDR.f32         S8, =0.0
+   31 00000030 4911            LDR              R1, =dummyOutput
+   32 00000032 EC81 2A05       VSTM             R1, {S4-S8}
+   33 00000036         
+   34 00000036         ; Update R2 to pass array length
+   35 00000036 F04F 0205       MOV              R2, #5
+   36 0000003A         
+   37 0000003A         ; Initialize q,r,x,p,k (Pointer to Kalman Struct)
+   38 0000003A ED9F 2A09       VLDR.f32         S4, =0.1    ; float q
+   39 0000003E EDDF 2A08       VLDR.f32         S5, =0.1    ; float r 
+   40 00000042 ED9F 3A0C       VLDR.f32         S6, =0.0    ; float x
+   41 00000046 EDDF 3A0B       VLDR.f32         S7, =0.0    ; float p
+   42 0000004A ED9F 4A0A       VLDR.f32         S8, =0.0    ; float k
+   43 0000004E 4B0B            LDR              R3, =dummyStruct ;load address 
+                                                            of dummy struct
+   44 00000050 EC83 2A05       VSTM             R3, {S4-S8} ; R3 acts as a poin
+                                                            ter to the struct 
+   45 00000054         
+   46 00000054         ; 1: Pointer to input data array
+   47 00000054         ; 2: Pointer to filtered data array
+   48 00000054         ; 3: Array length
+   49 00000054         
+   50 00000054         ; Run kalman filter
+   51 00000054 F8DF C028       LDR              R12, =Kalmanfilter_asm
+   52 00000058 47E0            BLX              R12
+   53 0000005A         
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   54 0000005A         ; Pop return link off of stack
+   55 0000005A F85D EB04       POP              {R14}
+   56 0000005E         
+   57 0000005E                 END
+              00 00 3DCCCCCD 
+              3E4CCCCD 
+              3E99999A 
+              3ECCCCCD 
               00000000 
-              3DCCCCCD 
+              00000000 
+              00000000 
               00000000 
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
-erwork --depend=.\objects\testbench_asm.d -o.\objects\testbench_asm.o -IC:\Proj
-ect\Project\MP426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\
-ARM\CMSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Dr
-ivers\CMSIS\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515
-" --predefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings
-\testbench_asm.lst testBench_asm.s
+erwork --depend=.\objects\testbench_asm.d -o.\objects\testbench_asm.o -IC:\MP42
+6_Lab1\MP426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\C
+MSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers
+\CMSIS\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --p
+redefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\test
+bench_asm.lst testBench_asm.s
 
 
 
@@ -73,9 +107,9 @@ testBench_asm 00000000
 
 Symbol: testBench_asm
    Definitions
-      At line 9 in file testBench_asm.s
+      At line 11 in file testBench_asm.s
    Uses
-      At line 8 in file testBench_asm.s
+      At line 10 in file testBench_asm.s
 Comment: testBench_asm used once
 2 symbols
 
@@ -90,15 +124,31 @@ Symbol: Kalmanfilter_asm
    Definitions
       At line 6 in file testBench_asm.s
    Uses
-      At line 30 in file testBench_asm.s
+      At line 51 in file testBench_asm.s
 Comment: Kalmanfilter_asm used once
-dummyArray 00000000
+dummyInput 00000000
 
-Symbol: dummyArray
+Symbol: dummyInput
    Definitions
       At line 7 in file testBench_asm.s
    Uses
-      At line 20 in file testBench_asm.s
-Comment: dummyArray used once
-2 symbols
-340 symbols in table
+      At line 22 in file testBench_asm.s
+Comment: dummyInput used once
+dummyOutput 00000000
+
+Symbol: dummyOutput
+   Definitions
+      At line 8 in file testBench_asm.s
+   Uses
+      At line 31 in file testBench_asm.s
+Comment: dummyOutput used once
+dummyStruct 00000000
+
+Symbol: dummyStruct
+   Definitions
+      At line 9 in file testBench_asm.s
+   Uses
+      At line 43 in file testBench_asm.s
+Comment: dummyStruct used once
+4 symbols
+342 symbols in table
