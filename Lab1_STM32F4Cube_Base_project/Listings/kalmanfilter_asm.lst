@@ -12,120 +12,145 @@ ARM Macro Assembler    Page 1
     6 00000000                 EXPORT           Kalmanfilter_asm
     7 00000000         Kalmanfilter_asm
     8 00000000         
-    9 00000000         ; ******************************************************
-                       ********************************** TALK TO TA ABOUT CHEC
-                       K FOR OVERFLOW ETC
-   10 00000000         
-   11 00000000         ; Filter takes four input paramaters
-   12 00000000         ; 1. A pointer to the input data array
-   13 00000000         ; 2. A pointer to the filtered data array
-   14 00000000         ; 3. The length of the arrays
-   15 00000000         ; 4. A pointer to the Kalmann filter struct/state
-   16 00000000         
-   17 00000000         ; For the function return value, registers R0/R1 & S0/S1
+    9 00000000         ; Filter takes four input paramaters
+   10 00000000         ; 1. A pointer to the input data array
+   11 00000000         ; 2. A pointer to the filtered data array
+   12 00000000         ; 3. The length of the arrays
+   13 00000000         ; 4. A pointer to the Kalmann filter struct/state
+   14 00000000         
+   15 00000000         ; For the function return value, registers R0/R1 & S0/S1
                         
-   18 00000000         ; are used for integer and floating-point results respec
+   16 00000000         ; are used for integer and floating-point results respec
                        tively
-   19 00000000         
-   20 00000000         ; Register inputs (Input array, output array, array leng
+   17 00000000         
+   18 00000000         ; Register inputs (Input array, output array, array leng
                        th, kalman struct address)
-   21 00000000         
-   22 00000000         ; Filter will hold its state as a quintuple (q,r,x,p,k) 
+   19 00000000         
+   20 00000000         ; Filter will hold its state as a quintuple (q,r,x,p,k) 
                        - all fp #'s
-   23 00000000         ; Filter will load these values into registers (S4,S5,S6
+   21 00000000         ; Filter will load these values into registers (S4,S5,S6
                        ,S7,S8)
-   24 00000000         
-   25 00000000         ; Initialize q,r,x,p,k
-   26 00000000         ; Load kalman state values into proper fp registers
-   27 00000000 ED93 2A00       VLDR.f32         S4, [R3, #0] ; float q
-   28 00000004 EDD3 2A01       VLDR.f32         S5, [R3, #4] ; float r 
-   29 00000008 ED93 3A02       VLDR.f32         S6, [R3, #8] ; float x
-   30 0000000C EDD3 3A03       VLDR.f32         S7, [R3, #12] ; float p
-   31 00000010 ED93 4A04       VLDR.f32         S8, [R3, #16] ; float k
-   32 00000014         
-   33 00000014         ; Initialize loop counter
-   34 00000014 F04F 0400       MOV              R4, #0
-   35 00000018         
-   36 00000018         ; Start loop
-   37 00000018         loop
-   38 00000018         
-   39 00000018         ; Load input array
-   40 00000018 EDD0 4A00       VLDR.f32         S9, [R0, #0] ; load proper inde
+   22 00000000         
+   23 00000000         ; Initialize q,r,x,p,k
+   24 00000000         ; Load kalman state values into proper fp registers
+   25 00000000 ED93 2A00       VLDR.f32         S4, [R3, #0] ; float q
+   26 00000004 EDD3 2A01       VLDR.f32         S5, [R3, #4] ; float r 
+   27 00000008 ED93 3A02       VLDR.f32         S6, [R3, #8] ; float x
+   28 0000000C EDD3 3A03       VLDR.f32         S7, [R3, #12] ; float p
+   29 00000010 ED93 4A04       VLDR.f32         S8, [R3, #16] ; float k
+   30 00000014         
+   31 00000014         ; Initialize loop counter
+   32 00000014 F04F 0400       MOV              R4, #0
+   33 00000018         
+   34 00000018         ; Start loop
+   35 00000018         LOOP
+   36 00000018         
+   37 00000018         ; Load input array
+   38 00000018 EDD0 4A00       VLDR.f32         S9, [R0, #0] ; load proper inde
                                                             x of input array to
                                                              S9 (measurement va
                                                             lue) 
-   41 0000001C         
-   42 0000001C         ; Find values of p and k
-   43 0000001C EE73 3A82       VADD.f32         S7, S7, S4  ; p = p + q 
-   44 00000020 EE33 5AA2       VADD.f32         S10, S7, S5 ; p + r 
-   45 00000024 EE83 4A85       VDIV.f32         S8, S7, S10 ; k = p / (p + r)
-   46 00000028         
-   47 00000028         ; Check for division overflow
-   48 00000028         ; LDR ASPR, FPSCR
-   49 00000028         ; TODO: Perform check
+   39 0000001C         
+   40 0000001C         ; Find values of p and k
+   41 0000001C EE73 3A82       VADD.f32         S7, S7, S4  ; p = p + q 
+   42 00000020 EE33 5AA2       VADD.f32         S10, S7, S5 ; p + r 
+   43 00000024         
+   44 00000024         ; ERROR CHECK ONE: Check for zero (not a number) in divi
+                       sor
+   45 00000024 EEB5 5A40       VCMP.f32         S10, #0
+   46 00000028 EEF1 FA10       VMRS             APSR_nzcv, FPSCR
+   47 0000002C D01C            BEQ              ERROR_OUT
+   48 0000002E         
+   49 0000002E         ; Finish operation on k
+   50 0000002E EE83 4A85       VDIV.f32         S8, S7, S10 ; k = p / (p + r)
 
 
 
 ARM Macro Assembler    Page 2 
 
 
-   50 00000028         
-   51 00000028         ; Find value of x
-   52 00000028 EE74 5AC3       VSUB.f32         S11, S9, S6 ; (measurement - x)
+   51 00000032         
+   52 00000032         ; Find value of x
+   53 00000032 EE74 5AC3       VSUB.f32         S11, S9, S6 ; (measurement - x)
                                                             
-   53 0000002C EE24 6A25       VMUL.f32         S12, S8, S11 ; k * (measurement
+   54 00000036 EE24 6A25       VMUL.f32         S12, S8, S11 ; k * (measurement
                                                              - x)
-   54 00000030         
-   55 00000030         ; Check for multiplication overflow
-   56 00000030         ; LDR ASPR, FPSCR
-   57 00000030         ; TODO: Perform check
-   58 00000030         
-   59 00000030         ; Finish operation on x
-   60 00000030 EE33 3A06       VADD.f32         S6, S6, S12 ; x = x + k *(measu
+   55 0000003A         
+   56 0000003A         ; Finish operation on x
+   57 0000003A EE33 3A06       VADD.f32         S6, S6, S12 ; x = x + k *(measu
                                                             rement - x)
-   61 00000034         
-   62 00000034         ; Find value of p
-   63 00000034 EEF7 5A00       VLDR.f32         S11, =1.0
-   64 00000038 EE35 5AC4       VSUB.f32         S10, S11, S8 ; (1 - k)
-   65 0000003C EE65 3A23       VMUL.f32         S7, S10, S7 ; p = (1 - k) * p
-   66 00000040         
-   67 00000040         ; Check for multiplication overflow
-   68 00000040         ; LDR ASPR, FPSCR
-   69 00000040         ; TODO: Perform check
-   70 00000040         
-   71 00000040         ; Load x into return register and update output array an
-                       d struct values
-   72 00000040 EEB0 0A43       VMOV.f32         S0, S6
-   73 00000044 EC83 2A05       VSTM             R3, {S4-S8}
-   74 00000048 EC81 3A01       VSTM             R1, S6      ; TODO Fix incremen
-                                                            ts
-   75 0000004C         
-   76 0000004C         ; Increment R0 & R1 addresses to return proper pointer f
+   58 0000003E         
+   59 0000003E         ; ERROR CHECK TWO: Check if x induced overflow (NOT POSS
+                       IBLE FOR VALUE TO OVERFLOW)
+   60 0000003E         ;VMRS APSR_nzcv, FPSCR
+   61 0000003E         ;BVS ERROR_OUT
+   62 0000003E         
+   63 0000003E         ; Find value of p
+   64 0000003E EEF7 5A00       VLDR.f32         S11, =1.0
+   65 00000042 EE35 5AC4       VSUB.f32         S10, S11, S8 ; (1 - k)
+   66 00000046 EE65 3A23       VMUL.f32         S7, S10, S7 ; p = (1 - k) * p
+   67 0000004A         
+   68 0000004A         ; ERROR CHECK THREE: Check if p induced overflow (NOT PO
+                       SSIBLE FOR VALUE TO OVERFLOW)
+   69 0000004A         ;VMRS APSR_nzcv, FPSCR
+   70 0000004A         ;BVS ERROR_OUT
+   71 0000004A         
+   72 0000004A         ; Update output array and struct values
+   73 0000004A EC83 2A05       VSTM             R3, {S4-S8}
+   74 0000004E EC81 3A01       VSTM             R1, S6
+   75 00000052         
+   76 00000052         ; Increment R0 & R1 addresses to return proper pointer f
                        or next iteration
-   77 0000004C F100 0004       ADD              R0, R0, #4
-   78 00000050 F101 0104       ADD              R1, R1, #4
-   79 00000054         
-   80 00000054         ; Determine whether or not loop should continue
-   81 00000054 F104 0401       ADD              R4, R4, #1
-   82 00000058 4294            CMP              R4, R2
-   83 0000005A DBDD            BLT              loop
-   84 0000005C         
-   85 0000005C         ; Return from branch
-   86 0000005C 4770            BX               LR
-   87 0000005E                 END
+   77 00000052 F100 0004       ADD              R0, R0, #4
+   78 00000056 F101 0104       ADD              R1, R1, #4
+   79 0000005A         
+   80 0000005A         ; Determine whether or not loop should continue
+   81 0000005A F104 0401       ADD              R4, R4, #1
+   82 0000005E 4294            CMP              R4, R2
+   83 00000060 DBDA            BLT              LOOP
+   84 00000062         
+   85 00000062         ; Load 0 into return register to indicate no error
+   86 00000062 F04F 0000       MOV              R0, #0
+   87 00000066         
+   88 00000066         ; Return from branch
+   89 00000066 4770            BX               LR
+   90 00000068         
+   91 00000068         ; Function called when overflow or other error detected
+   92 00000068         ERROR_OUT
+   93 00000068         
+   94 00000068         ; Load non-zero value into return register to indicate e
+                       rror
+   95 00000068 F04F 30FF       MOV              R0, #-1
+   96 0000006C 4770            BX               LR
+   97 0000006E         
+   98 0000006E                 END
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=.\objects\kalmanfilter_asm.d -o.\objects\kalmanfilter_asm.o -IC
-:\MP426_Lab1\MP426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK
-\ARM\CMSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\D
-rivers\CMSIS\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 51
-5" --predefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listing
-s\kalmanfilter_asm.lst Kalmanfilter_asm.s
+:\zzzz\MP426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\C
+MSIS\4.5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+\CMSIS\Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --p
+redefine="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\kalm
+anfilter_asm.lst Kalmanfilter_asm.s
 
 
 
 ARM Macro Assembler    Page 1 Alphabetic symbol ordering
 Relocatable symbols
 
+ERROR_OUT 00000068
+
+Symbol: ERROR_OUT
+   Definitions
+      At line 92 in file Kalmanfilter_asm.s
+   Uses
+      At line 47 in file Kalmanfilter_asm.s
+Comment: ERROR_OUT used once
 Kalmanfilter_asm 00000000
 
 Symbol: Kalmanfilter_asm
@@ -134,6 +159,14 @@ Symbol: Kalmanfilter_asm
    Uses
       At line 6 in file Kalmanfilter_asm.s
 Comment: Kalmanfilter_asm used once
+LOOP 00000018
+
+Symbol: LOOP
+   Definitions
+      At line 35 in file Kalmanfilter_asm.s
+   Uses
+      At line 83 in file Kalmanfilter_asm.s
+Comment: LOOP used once
 fn 00000000
 
 Symbol: fn
@@ -142,13 +175,5 @@ Symbol: fn
    Uses
       None
 Comment: fn unused
-loop 00000018
-
-Symbol: loop
-   Definitions
-      At line 37 in file Kalmanfilter_asm.s
-   Uses
-      At line 83 in file Kalmanfilter_asm.s
-Comment: loop used once
-3 symbols
-337 symbols in table
+4 symbols
+338 symbols in table
