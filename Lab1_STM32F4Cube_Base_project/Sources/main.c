@@ -4,7 +4,9 @@
 //#include "test.h"
 
 #define ARRAY_LENGTH 5
+#define MAX_VALUE 3.4 * pow(10,38)
 
+// Struct declarations *************************************************************************************
 typedef struct kalman_t{
 	float q;
 	float r;
@@ -14,11 +16,11 @@ typedef struct kalman_t{
 } kalman_t;
 
 typedef struct dsp_t {
-	float diffArr[ARRAY_LENGTH];
-	float meanDiff;
-	float standDevDiff;
-	float correlation;
-	float convolArr[ARRAY_LENGTH];
+	float32_t diffArr[ARRAY_LENGTH];
+	float32_t meanDiff;
+	float32_t standDevDiff;
+	float32_t corrArr[ARRAY_LENGTH];
+	float32_t convolArr[ARRAY_LENGTH];
 	
 } dsp_t;
 	
@@ -26,61 +28,66 @@ typedef struct dsp_t {
 int call_asm(float* testArray, float* outputArray, int length, kalman_t* kstate);
 int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kalman_t* kalman);
 int Kalmannfilter_C(float* InputArray, float* OutputArray, kalman_t* kstate, int Length);
-struct dsp_t func(float* inputArray, float* outputArray);
-struct dsp_t funcArm(float* inputArray, float* outputArray);
+int func(float* inputArray, float* outputArray, dsp_t* analysisOut);
+int funcArm(float* inputArray, float* outputArray, dsp_t* analysisOut);
+
+// Main function *******************************************************************************************
 int main() {
 	
 	kalman_t kalmanState_asm, kalmanState_c;
 	dsp_t out_c, out_arm;
 	
-	int i, returnCode;
+	int i;
 	
 	float testArray[ARRAY_LENGTH] = {0.1, 0.1, 0.2, 0.3, 0.4};
 	float outputArray_c[ARRAY_LENGTH];
 	float outputArray_asm[ARRAY_LENGTH];
 	
 	
-	
-	
-	// PART II: Comparison of Assembly and C Operations
-	// Call assembly function and print output array
-//	returnCode = call_asm(testArray, outputArray_asm, ARRAY_LENGTH, &kalmanState_asm);
-//	if (returnCode != 0) { 
-//		printf("Error in assembly function");
+	// PART II Call ASM function 
+//	if (call_asm(testArray, outputArray_asm, ARRAY_LENGTH, &kalmanState_asm) != 0) { 
+//		printf("Error in ASM function");
 //		return -1;
 //	}
 //		
+	// PART II Outputs - ASM code implementation
 //	for (i=0; i < ARRAY_LENGTH; i++) printf("outputArray_asm[%i] = %f\n", i, outputArray_asm[i]);
 //	
 	
-	// Call C function to update kalman state and print output
-	returnCode = Kalmannfilter_C(testArray, outputArray_c, &kalmanState_c, ARRAY_LENGTH);
-	if (returnCode != 0) { 
+	// PART II Call C function to update kalman state and print output
+	if (Kalmannfilter_C(testArray, outputArray_c, &kalmanState_c, ARRAY_LENGTH) != 0) { 
 		printf("Error in C function");
 		return -1;
 	}
-	// Print output array from the c code
+	
+	// PART II Outputs - C code implementation
 	for (i=0; i < ARRAY_LENGTH; i++) printf("outputArray_c[%i] = %f\n", i, outputArray_c[i]);
+	
+	
 	// PART III Outputs - Our own implementation
-	out_c = func(testArray, outputArray_c);
-	printf("part 3 outputs\n");
-	printf("diffarray\n");
+	printf("Part 3: Our personal C implementation\n");
+	func(testArray, outputArray_c, &out_c);
 	for (i=0; i < ARRAY_LENGTH; i++) printf("diffArray_c[%i] = %f\n", i, out_c.diffArr[i]);
 	printf("mean: %.9f\n", out_c.meanDiff);
 	printf("standard deviation: %.9f\n", out_c.standDevDiff);
-	printf("mean: %.9f\n", out_c.meanDiff);
-	for (i=0; i < ARRAY_LENGTH; i++) printf("convolArr[%i] = %f\n", i, out_c.convolArr[i]);
+	for (i=0; i < ARRAY_LENGTH; i++) printf("correlationArr[%i] = %f\n", i, out_c.corrArr[i]);
+	for (i=0; i < ARRAY_LENGTH; i++) printf("convolutionArr[%i] = %f\n", i, out_c.convolArr[i]);
 
 	
-	// PART III Outputs - CMSIS-DSP implementation
-	out_arm = funcArm(testArray, outputArray_c);
-	
-	
+	// PART III Outputs - CMSIS-DSP implementation (TODO : MOVE PRINT STATEMENTS OUTSIDE OF THIS FUNCTION)
+	printf("Part 3: CMSIS-DSP implementation\n");
+	funcArm(testArray, outputArray_c, &out_arm);
+	for (i=0; i < ARRAY_LENGTH; i++) printf("diffArr[%i] = %0.9f\n", i, out_arm.diffArr[i]);
+	printf("diffMean: %.9f\n", out_arm.meanDiff);
+	printf("standardDev: %.9f\n", out_arm.standDevDiff);
+	for (i=0; i < ARRAY_LENGTH; i++) printf("corrArr[%i] = %0.9f\n", i, out_arm.corrArr[i]);
+	for (i=0; i < ARRAY_LENGTH; i++) printf("convolArr[%i] = %0.9f\n", i, out_arm.convolArr[i]);
 	
 	
 	return 0;
 }
 
+// Call to ASM Kalman filter function ***********************************************************************
 int call_asm(float* testArray, float* outputArray, int length, kalman_t* kstate){
 	
 	// Set initial values of kstate
@@ -95,6 +102,7 @@ int call_asm(float* testArray, float* outputArray, int length, kalman_t* kstate)
 	
 }
 
+// C Kalman filter function *********************************************************************************
 int Kalmannfilter_C(float* InputArray, float* OutputArray, kalman_t* kstate, int Length){
 	
 	int i;
@@ -106,100 +114,123 @@ int Kalmannfilter_C(float* InputArray, float* OutputArray, kalman_t* kstate, int
 	kstate->p = 0.0;
 	kstate->k = 0.0;
 	
-	for (i=0; i < Length; i++){
+	// Run unique iteration on first run where overflow can occur
+	//// Check for overflow in input value or addition
+	if ( (kstate->p = kstate->p + kstate->q) >= MAX_VALUE || InputArray[0] >= MAX_VALUE){
+		return -1;
+	}
+	
+	// Check for overflow and NAN
+	if ( (kstate->p + kstate->r) == 0 || (kstate->p + kstate->r) >= MAX_VALUE){
+			return -1;
+	}
+	
+	kstate->k = kstate->p / (kstate->p + kstate->r);
+	kstate->x = kstate->x + kstate->k * (InputArray[i] - kstate->x);
+	kstate->p = (1 - kstate->k) * kstate->p;
+	OutputArray[i] = kstate->x;
+	
+	for (i=1; i < Length; i++){
+		
+		// Check for input measurement overflow
+		if ( InputArray[i] >= MAX_VALUE ){
+			return -1;
+		}
+		
 		kstate->p = kstate->p + kstate->q;
+		
+		// Check for NAN
+		if ( (kstate->p + kstate->r) == 0 ){
+			return -1;
+		}
+		
 		kstate->k = kstate->p / (kstate->p + kstate->r);
 		kstate->x = kstate->x + kstate->k * (InputArray[i] - kstate->x);
 		kstate->p = (1 - kstate->k) * kstate->p;
 		OutputArray[i] = kstate->x;
+		
 	}
 	
 	return 0;
 }
-dsp_t func(float* inputArray, float* outputArray) {
+
+// C DSP Function *******************************************************************************************
+int func(float* inputArray, float* outputArray, dsp_t* analysisOut) {
 	
 	int i,k;
-	float diffArray[ARRAY_LENGTH];
-	float meanDiff = 0.0;
-	float stanDev =  0.0;
-	float sum_x = 0.0;
-	float sum_y = 0.0;
-	float sum_xy = 0.0;
-	float sum_x2 = 0.0;
-	float sum_y2 = 0.0;
-	float correlation = 0.0;
-	float tempSum;
-	float convolArray[ARRAY_LENGTH];
-	dsp_t analysisOut;
 	
-	// PART III: 4 Additional Operations
-	//A: Subtraction of original data and filtered data
+	float32_t meanDiff, stdDevDiff, tempSum;
+	float32_t diffArray[ARRAY_LENGTH], correlationArray[ARRAY_LENGTH], convolArray[ARRAY_LENGTH];
 	
+	
+	meanDiff = stdDevDiff = tempSum = 0.0;
+	
+	// Subtraction of original data and filtered data
 	for (i=0; i < ARRAY_LENGTH; i++) {
-		diffArray[i] = outputArray[i] - inputArray[i];
+		analysisOut->diffArr[i] = diffArray[i] = outputArray[i] - inputArray[i];
 		meanDiff += diffArray[i];
-		//set output diff arrary
-		analysisOut.diffArr[i]= diffArray[i];
 	}
-	//for (i=0; i < ARRAY_LENGTH; i++) printf("diffArray[%i] = %f\n", i, diffArray[i]);
 	
-	//B: Standard deviation: sigma = sqrt((1/N) sum(x_i-u)^2)	; also calculate average/mean of difference array
-	
+	// Standard deviation: sigma = sqrt((1/N) sum(x_i-u)^2)	; also calculate average/mean of difference array
 	meanDiff = meanDiff/ARRAY_LENGTH;	
-	//printf("meanDiff: %f\n", meanDiff);
 	
 	for (i=0; i < ARRAY_LENGTH; i++) {
-		stanDev += pow((diffArray[i] - meanDiff),2); 
+		stdDevDiff += pow((diffArray[i] - meanDiff),2); 
 	}
-	stanDev = sqrt((1.0/ARRAY_LENGTH)*stanDev);
-	//printf("standDev: %.9f\n", stanDev);
 	
-	//C: Calculate correlation coefficient between original and tracked vectors
+	stdDevDiff = sqrt((1.0/ARRAY_LENGTH)*stdDevDiff);
 	
-	for (i=0; i < ARRAY_LENGTH; i++) {
-		sum_xy += inputArray[i] * outputArray[i] ;
-		sum_x += inputArray[i];
-		sum_y += outputArray[i];
-		sum_x2 += pow(inputArray[i],2);
-		sum_y2 += pow(outputArray[i],2);
+	// Calculate correlation array
+	for (i=0; i < ARRAY_LENGTH; i++){
+		for (k=0; k < ARRAY_LENGTH; k++){
+			correlationArray[i] += (inputArray[k] * outputArray[ARRAY_LENGTH - (k + i)]);
+		}
 	}
 
-	correlation = ( ARRAY_LENGTH*sum_xy - sum_x*sum_y )/( sqrt( ARRAY_LENGTH*sum_x2 - pow(sum_x,2) )*sqrt( ARRAY_LENGTH*sum_y2 - pow(sum_y,2) ) );
-	//printf("correlation: %.9f\n", correlation);
-	
-	//D: Calculate convolution between the 2 vectors
-	// y[n] = x[n]*h[n] = sum_{-5,5} x[k] * h[n-k]
-	
+	// Calculate convolution between the 2 vectors
+	//// y[n] = x[n]*h[n] = sum_{-5,5} x[k] * h[n-k]
 	for(i=0; i<ARRAY_LENGTH; i++) {
-		
 		for(k=0; k<ARRAY_LENGTH;k++) {
-			tempSum += inputArray[k] * outputArray[i - k];
-			//printf("tempSum: %.9f\n", tempSum);
+			if(i-k >= 0) tempSum += inputArray[k] * outputArray[i - k];
 		}
-	//	printf("___________\n");
-		convolArray[i] = tempSum;
-		analysisOut.convolArr[i] =  tempSum;
+
+		analysisOut->convolArr[i] = convolArray[i] = tempSum;
+		analysisOut->corrArr[i] = correlationArray[i];
 		tempSum = 0.0;
 	}
-	//for (i=0; i < ARRAY_LENGTH; i++) printf("convolArray[%i] = %0.9f\n", i, convolArray[i]);
 	
-	//analysisOut.diffArr[0]=1;
-	analysisOut.meanDiff = meanDiff;
-	analysisOut.standDevDiff = stanDev;
-	analysisOut.correlation = correlation;
+	analysisOut->meanDiff = meanDiff;
+	analysisOut->standDevDiff = stdDevDiff;
 	
 	
-	return analysisOut;
+	return 0;
 }
-dsp_t funcArm(float* inputArray, float* outputArray) {
+
+// ARM DSP Function ****************************************************************************************
+int funcArm(float* inputArray, float* outputArray, dsp_t* analysisOut) {
+	
 	int i;
-	//float diffArr[ARRAY_LENGTH];
-	dsp_t analysisOut;
-	arm_matrix_instance_f32 diffArr[ARRAY_LENGTH];
 	
-	arm_status arm_mat_subf32(&outputArray, &inputArray, &diffArr);
-	//for (i=0; i < ARRAY_LENGTH; i++) printf("diffArray[%i] = %f\n", i, diffArr[i]);
-	//analysisOut.diffArr = diffArr;
+	float32_t diffArr[ARRAY_LENGTH];
+	float32_t diffMean, stanDev;
+	float32_t corrArr[ARRAY_LENGTH];
+	float32_t convolArr[ARRAY_LENGTH];
 	
-	return analysisOut;
+	// Get diffence Array
+	arm_sub_f32(outputArray, inputArray, analysisOut->diffArr, 5.0);
+	
+	// Get mean
+	arm_mean_f32(analysisOut->diffArr, (uint32_t) 5, &analysisOut->meanDiff);
+	
+	// Get standard deviation
+	arm_std_f32(analysisOut->diffArr, (uint32_t) 5, &analysisOut->standDevDiff);
+	
+	// Get correlation
+	arm_correlate_f32(inputArray, 5.0, outputArray, 5.0, analysisOut->corrArr);
+	
+	// Get convolution
+	arm_conv_f32(inputArray, 5, outputArray, 5, analysisOut->convolArr);
+	
+	
+	return 0;
 }

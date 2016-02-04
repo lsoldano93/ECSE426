@@ -214,7 +214,7 @@
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>262</SubType>
-          <ItemText>0x00000000</ItemText>
+          <ItemText>0x20000000</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>

@@ -37,23 +37,23 @@ ARM Macro Assembler    Page 1
    26 00000000 BF68 ED93 
               2A00             VLDRVS.f32       S4, [R3, #0] ; float q
    27 00000006 EEF1 FA10       VMRS             APSR_nzcv, FPSCR
-   28 0000000A D644            BVS              ERROR_OUT
+   28 0000000A D63E            BVS              ERROR_OUT
    29 0000000C BF68 EDD3 
               2A01             VLDRVS.f32       S5, [R3, #4] ; float r 
    30 00000012 EEF1 FA10       VMRS             APSR_nzcv, FPSCR
-   31 00000016 D63E            BVS              ERROR_OUT
+   31 00000016 D638            BVS              ERROR_OUT
    32 00000018 BF68 ED93 
               3A02             VLDRVS.f32       S6, [R3, #8] ; float x
    33 0000001E EEF1 FA10       VMRS             APSR_nzcv, FPSCR
-   34 00000022 D638            BVS              ERROR_OUT
+   34 00000022 D632            BVS              ERROR_OUT
    35 00000024 BF68 EDD3 
               3A03             VLDRVS.f32       S7, [R3, #12] ; float p
    36 0000002A EEF1 FA10       VMRS             APSR_nzcv, FPSCR
-   37 0000002E D632            BVS              ERROR_OUT
+   37 0000002E D62C            BVS              ERROR_OUT
    38 00000030 BF68 ED93 
               4A04             VLDRVS.f32       S8, [R3, #16] ; float k
    39 00000036 EEF1 FA10       VMRS             APSR_nzcv, FPSCR
-   40 0000003A D62C            BVS              ERROR_OUT
+   40 0000003A D626            BVS              ERROR_OUT
    41 0000003C         
    42 0000003C         ; Initialize loop counter
    43 0000003C F04F 0400       MOV              R4, #0
@@ -73,7 +73,7 @@ ARM Macro Assembler    Page 2
                                                              S9 (measurement va
                                                             lue)
    50 00000044 EEF1 FA10       VMRS             APSR_nzcv, FPSCR
-   51 00000048 D625            BVS              ERROR_OUT
+   51 00000048 D61F            BVS              ERROR_OUT
    52 0000004A         
    53 0000004A         ; Find values of p and k and make sure no overflow by ad
                        ditions
@@ -85,7 +85,7 @@ ARM Macro Assembler    Page 2
                         if overflow occurs in addition
    59 00000052 EEB5 5A40       VCMP.f32         S10, #0
    60 00000056 EEF1 FA10       VMRS             APSR_nzcv, FPSCR
-   61 0000005A D01C            BEQ              ERROR_OUT
+   61 0000005A D016            BEQ              ERROR_OUT
    62 0000005C         
    63 0000005C         ; Finish operation on k
    64 0000005C EE83 4A85       VDIV.f32         S8, S7, S10 ; k = p / (p + r)
@@ -93,53 +93,47 @@ ARM Macro Assembler    Page 2
    66 00000060         ; Find value of x
    67 00000060 EE34 5AC3       VSUB.f32         S10, S9, S6 ; (measurement - x)
                                                             
-   68 00000064 EE64 5A05       VMUL.f32         S11, S8, S10 ; k * (measurement
-                                                             - x)
+   68 00000064 EEA4 3A05       VFMA.f32         S6, S8, S10 ; x + k * (measurem
+                                                            ent - x)
    69 00000068         
-   70 00000068         ; Finish operation on x
-   71 00000068 EE33 3A25       VADD.f32         S6, S6, S11 ; x = x + k * (meas
-                                                            urement - x)
+   70 00000068         ; Find value of p
+   71 00000068 EEE4 3A63       VFMS.f32         S7, S8, S7  ; p = (1 - k) * p
    72 0000006C         
-   73 0000006C         ; Find value of p
-   74 0000006C EEF7 5A00       VLDR.f32         S11, =1.0
-   75 00000070 EE35 5AC4       VSUB.f32         S10, S11, S8 ; (1 - k)
-   76 00000074 EE65 3A23       VMUL.f32         S7, S10, S7 ; p = (1 - k) * p
-   77 00000078         
-   78 00000078         ; Update output array and struct values
-   79 00000078 EC83 2A05       VSTM             R3, {S4-S8}
-   80 0000007C EC81 3A01       VSTM             R1, S6
-   81 00000080         
-   82 00000080         ; Increment R0 & R1 addresses to return proper pointer f
+   73 0000006C         ; Update output array and struct values
+   74 0000006C EC83 2A05       VSTM             R3, {S4-S8}
+   75 00000070 EC81 3A01       VSTM             R1, S6
+   76 00000074         
+   77 00000074         ; Increment R0 & R1 addresses to return proper pointer f
                        or next iteration
-   83 00000080 F100 0004       ADD              R0, R0, #4
-   84 00000084 F101 0104       ADD              R1, R1, #4
-   85 00000088         
-   86 00000088         ; Determine whether or not loop should continue
-   87 00000088 F104 0401       ADD              R4, R4, #1
-   88 0000008C 4294            CMP              R4, R2
-   89 0000008E DBD7            BLT              LOOP
-   90 00000090         
-   91 00000090         ; Load 0 into return register to indicate no error
-   92 00000090 F04F 0000       MOV              R0, #0
-   93 00000094         
-   94 00000094         ; Return from branch
-   95 00000094 4770            BX               LR
-   96 00000096         
-   97 00000096         ; Function called when overflow or other error detected
-   98 00000096         ERROR_OUT
-   99 00000096         
+   78 00000074 F100 0004       ADD              R0, R0, #4
+   79 00000078 F101 0104       ADD              R1, R1, #4
+   80 0000007C         
+   81 0000007C         ; Determine whether or not loop should continue
+   82 0000007C F104 0401       ADD              R4, R4, #1
+   83 00000080 4294            CMP              R4, R2
+   84 00000082 DBDD            BLT              LOOP
+   85 00000084         
+   86 00000084         ; Load 0 into return register to indicate no error
+   87 00000084 F04F 0000       MOV              R0, #0
+   88 00000088         
+   89 00000088         ; Return from branch
+   90 00000088 4770            BX               LR
+   91 0000008A         
+   92 0000008A         ; Function called when overflow or other error detected
+   93 0000008A         ERROR_OUT
+   94 0000008A         
+   95 0000008A         ; Load non-zero value into return register to indicate e
+                       rror
+   96 0000008A F04F 30FF       MOV              R0, #-1
+   97 0000008E 4770            BX               LR
+   98 00000090         
+   99 00000090                 END
 
 
 
 ARM Macro Assembler    Page 3 
 
 
-  100 00000096         ; Load non-zero value into return register to indicate e
-                       rror
-  101 00000096 F04F 30FF       MOV              R0, #-1
-  102 0000009A 4770            BX               LR
-  103 0000009C         
-  104 0000009C                 END
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=.\objects\kalmanfilter_asm.d -o.\objects\kalmanfilter_asm.o -IC
 :\zzz\MP426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\CM
@@ -153,11 +147,11 @@ nfilter_asm.lst Kalmanfilter_asm.s
 ARM Macro Assembler    Page 1 Alphabetic symbol ordering
 Relocatable symbols
 
-ERROR_OUT 00000096
+ERROR_OUT 0000008A
 
 Symbol: ERROR_OUT
    Definitions
-      At line 98 in file Kalmanfilter_asm.s
+      At line 93 in file Kalmanfilter_asm.s
    Uses
       At line 28 in file Kalmanfilter_asm.s
       At line 31 in file Kalmanfilter_asm.s
@@ -181,7 +175,7 @@ Symbol: LOOP
    Definitions
       At line 46 in file Kalmanfilter_asm.s
    Uses
-      At line 89 in file Kalmanfilter_asm.s
+      At line 84 in file Kalmanfilter_asm.s
 Comment: LOOP used once
 fn 00000000
 

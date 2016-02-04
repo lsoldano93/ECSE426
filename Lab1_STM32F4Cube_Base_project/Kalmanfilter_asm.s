@@ -65,15 +65,10 @@ LOOP
 	
 ; Find value of x
 	VSUB.f32 S10, S9, S6 ; (measurement - x)
-	VMUL.f32 S11, S8, S10 ; k * (measurement - x)
-	
-; Finish operation on x
-	VADD.f32 S6, S6, S11 ; x = x + k * (measurement - x)
+	VFMA.f32 S6, S8, S10 ; x + k * (measurement - x)
 
 ; Find value of p
-	VLDR.f32 S11, =1.0
-	VSUB.f32 S10, S11, S8 ; (1 - k)
-	VMUL.f32 S7, S10, S7 ; p = (1 - k) * p
+	VFMS.f32 S7, S8, S7 ; p = (1 - k) * p
 
 ; Update output array and struct values
 	VSTM R3, {S4-S8}
