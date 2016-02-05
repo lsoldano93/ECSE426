@@ -1,6 +1,6 @@
 ; Luke Soldano, Xavier Agostini (C) 2016
 ; McGill University, ECSE 426, Lab One
-; Assembly code to implemenet a Kalmann filter
+; Assembly code to implement a Kalmann filter
 
 	AREA fn, CODE, READONLY
 	EXPORT Kalmanfilter_asm
@@ -23,19 +23,23 @@ Kalmanfilter_asm
 ; Initialize q,r,x,p,k
 ; Load kalman state values into proper fp registers
 ; Check for overflowed inputs
-	VLDRVS.f32 S4, [R3, #0] ; float q
+	VLDR.f32 S4, [R3, #0] ; float q
 	VMRS APSR_nzcv, FPSCR
 	BVS ERROR_OUT
-	VLDRVS.f32 S5, [R3, #4] ; float r 
+	
+	VLDR.f32 S5, [R3, #4] ; float r 
 	VMRS APSR_nzcv, FPSCR
 	BVS ERROR_OUT
-	VLDRVS.f32 S6, [R3, #8] ; float x
+	
+	VLDR.f32 S6, [R3, #8] ; float x
 	VMRS APSR_nzcv, FPSCR
 	BVS ERROR_OUT
-	VLDRVS.f32 S7, [R3, #12] ; float p
+	
+	VLDR.f32 S7, [R3, #12] ; float p
 	VMRS APSR_nzcv, FPSCR
 	BVS ERROR_OUT
-	VLDRVS.f32 S8, [R3, #16] ; float k
+
+	VLDR.f32 S8, [R3, #16] ; float k
 	VMRS APSR_nzcv, FPSCR
 	BVS ERROR_OUT
 
@@ -68,7 +72,7 @@ LOOP
 	VFMA.f32 S6, S8, S10 ; x + k * (measurement - x)
 
 ; Find value of p
-	VFMS.f32 S7, S8, S7 ; p = (1 - k) * p
+	VFMS.f32 S7, S8, S7 ; p = (1 - k) * p = -pk + p
 
 ; Update output array and struct values
 	VSTM R3, {S4-S8}

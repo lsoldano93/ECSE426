@@ -87,7 +87,7 @@
             <nStopA1X>0</nStopA1X>
             <nStopA2X>0</nStopA2X>
           </AfterMake>
-          <SelectedForBatchBuild>0</SelectedForBatchBuild>
+          <SelectedForBatchBuild>1</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
         </TargetCommonOption>
         <CommonProperty>
@@ -155,7 +155,7 @@
             <CpuDllArguments></CpuDllArguments>
             <PeripheralDll></PeripheralDll>
             <PeripheralDllArguments></PeripheralDllArguments>
-            <InitializationFile></InitializationFile>
+            <InitializationFile>.\Sources\config.ini</InitializationFile>
           </SimDlls>
           <TargetDlls>
             <CpuDll></CpuDll>
@@ -436,6 +436,11 @@
               <FileName>array1.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\Sources\array1.s</FilePath>
+            </File>
+            <File>
+              <FileName>demo.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\demo.h</FilePath>
             </File>
           </Files>
         </Group>

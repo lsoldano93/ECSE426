@@ -6,7 +6,7 @@ ARM Macro Assembler    Page 1
 
     1 00000000         ; Luke Soldano, Xavier Agostini (C) 2016
     2 00000000         ; McGill University, ECSE 426, Lab One
-    3 00000000         ; Assembly code to implemenet a Kalmann filter
+    3 00000000         ; Assembly code to test a Kalmann filter
     4 00000000         
     5 00000000                 AREA             fn, CODE, READONLY
     6 00000000                 IMPORT           Kalmanfilter_asm
@@ -45,7 +45,7 @@ ARM Macro Assembler    Page 1
    34 0000002A EDDF 2A09       VLDR.f32         S5, =0.1    ; float r (Starts a
                                                             t 0.1)
    35 0000002E ED9F 3A0D       VLDR.f32         S6, =0.0    ; float x
-   36 00000032 EDDF 3A0C       VLDR.f32         S7, =0.0    ; float p
+   36 00000032 EDDF 3A07       VLDR.f32         S7, =0.1    ; float p
    37 00000036 ED9F 4A0B       VLDR.f32         S8, =0.0    ; float k
    38 0000003A 4B0B            LDR              R3, =dummyStruct ;load address 
                                                             of dummy struct
@@ -80,12 +80,12 @@ ARM Macro Assembler    Page 2
               00000000 
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
-erwork --depend=.\objects\testbench_asm.d -o.\objects\testbench_asm.o -IC:\zzz\
-MP426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.
-5.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\
-Device\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --predefin
-e="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\testbench_a
-sm.lst testBench_asm.s
+erwork --depend=.\objects\testbench_asm.d -o.\objects\testbench_asm.o -IC:\vc\M
+P426_Lab1\Lab1_STM32F4Cube_Base_project\RTE -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.5
+.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.7.0\Drivers\CMSIS\D
+evice\ST\STM32F4xx\Include --predefine="__UVISION_VERSION SETA 515" --predefine
+="_RTE_ SETA 1" --predefine="STM32F407xx SETA 1" --list=.\listings\testbench_as
+m.lst testBench_asm.s
 
 
 

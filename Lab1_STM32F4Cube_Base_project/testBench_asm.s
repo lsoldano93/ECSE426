@@ -1,6 +1,6 @@
 ; Luke Soldano, Xavier Agostini (C) 2016
 ; McGill University, ECSE 426, Lab One
-; Assembly code to implemenet a Kalmann filter
+; Assembly code to test a Kalmann filter
 
 	AREA fn, CODE, READONLY
 	IMPORT Kalmanfilter_asm
@@ -33,7 +33,7 @@ testBench_asm
 	VLDR.f32 S4, =0.1 ; float q (Starts at 0.1)
 	VLDR.f32 S5, =0.1 ; float r (Starts at 0.1)
 	VLDR.f32 S6, =0.0 ; float x
-	VLDR.f32 S7, =0.0 ; float p
+	VLDR.f32 S7, =0.1 ; float p
 	VLDR.f32 S8, =0.0 ; float k
 	LDR R3, =dummyStruct ;load address of dummy struct
 	VSTM R3, {S4-S8} ; R3 acts as a pointer to the struct 
