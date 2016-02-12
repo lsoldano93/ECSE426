@@ -3,7 +3,7 @@
   * File Name          : main.c
   * Description        : A program which showcases ADC and TIM3 under the new firmware
 	                       The ADC
-	* Author						 : Ashraf Suyyagh
+	* Authors						 : Ashraf Suyyagh, Luke Soldano, Xavier Agostini
 	* Version            : 1.0.0
 	* Date							 : January 14th, 2016
   ******************************************************************************
@@ -11,77 +11,59 @@
 	
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "stm32f4xx_conf.h"
+#include "stm32f4xx_hal_conf.h"
+#include "stm32f4xx_hal_gpio.h"
 #include "supporting_functions.h"
 
+/* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef ADC1_Handle;
+
+/* Private function prototypes -----------------------------------------------*/
+void config_ADC_temp(void);
+void SystemClock_Config	(void);
+
 /* Initialize -------------------------------------------------------------------*/
-/* Code referenced from: http s://my.st.com/public/STe2ecommunities/mcu/Lists/STM32Java/Flat.aspx?RootFolder=https%3a%2f%2fmy%2est%2ecom%2fpublic%2fSTe2ecommunities%2fmcu%2fLists%2fSTM32Java%2fSTM32F3%20internal%20temp%20sensor&FolderCTID=0x01200200770978C69A1141439FE559EB459D758000F9A0E3A95BA69146A17C2E80209ADC21&currentviews=2303 */
-void config_ADC_temp() {
+void config_ADC_temp(void) {
 	
-	// Initialize struct for ADC
-	ADC_InitTypeDef ADC_Init_S; 
+	ADC_InitTypeDef ADC1_itd;
+	ADC_ChannelConfTypeDef ADC1_ch16;
 	
-	// Common init struct defined for ADC
-	ADC_CommonInitTypeDef ADC_Common_Init_S;
+	// TODO: Enable ADC clock
 	
-	// Reset all ADCs to their default values.
-	ADC_DeInit(); 
+	// Initialize values for ADC1 init type def
+	ADC1_itd.Resolution = ADC_RESOLUTION_12B;    									// 12 bit resolution      
+	ADC1_itd.DataAlign = ADC_DATAALIGN_RIGHT;         						// Data alligns to right
+	ADC1_itd.ScanConvMode = DISABLE;           
+	ADC1_itd.EOCSelection = ADC_EOC_SINGLE_CONV;           				// Single conversion mode
+	ADC1_itd.ContinuousConvMode = DISABLE;     
+	ADC1_itd.DMAContinuousRequests = ADC_DMAACCESSMODE_DISABLED;  
+	ADC1_itd.NbrOfConversion = 1;       													// Single conversion (per call?)
+	ADC1_itd.DiscontinuousConvMode = DISABLE;  
+	ADC1_itd.NbrOfDiscConversion = 0;    
+	ADC1_itd.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;       
+	ADC1_itd.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;  
 	
-	// Enable ADC1 clock
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
+	// Initialize values for ADC1 handle type def
+	ADC1_Handle.Instance = ADC1;
+	ADC1_Handle.Init = ADC1_itd;
 	
-	// Set ADC to operate in independent mode
-	ADC_Common_Init_S.ADC_Mode= ADC_Mode_Independent;
+	// Initialize values for temperature sensor (Temperature analog channel is Ch16 of ADC1)
+	ADC1_ch16.Channel = ADC_CHANNEL_16;
+	ADC1_ch16.Rank = 1;
+	ADC1_ch16.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+	ADC1_ch16.Offset = 0;
 	
-	// Select freq of ADC's clock - Div2 means clock counts 0 & 1 each cycle
-	ADC_Common_Init_S.ADC_Prescaler = ADC_Prescaler_Div2;
+	// Initialize and start ADC1
+	HAL_ADC_Init(&ADC1_Handle);
+	HAL_ADC_Start(&ADC1_Handle);	
 	
-	// Disable DMA access mode for multiple ADCs
-	ADC_Common_Init_S.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled; 
+	// Configure temperature sensor peripheral 
+	HAL_ADC_ConfigChannel(&ADC1_Handle, &ADC1_ch16);
 	
-	// Configure delay between two sampling phases
-	ADC_Common_Init_S.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles; 
-	
-	// Give ADC peripherals values according to parameters previously specified
-	ADC_CommonInit(&ADC_Common_Init_S);
-	
-	// ADC resolution set to 12 bits
-	ADC_Init_S.ADC_Resolution = ADC_Resolution_12b; 
-	
-	// Set conversion to perform in single channel mode
-	ADC_Init_S.ADC_ScanConvMode= DISABLE; 
-	
-	// Set ADC to convert value only when signaled to do so
-	ADC_Init_S.ADC_ContinuousConvMode= DISABLE; 
-	
-	// Set no external conversion trigger edge
-	ADC_Init_S.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None; 
-	
-	// Allign ADC data on right, data saved starting at LSB
-	ADC_Init_S.ADC_DataAlign = ADC_DataAlign_Right; 
-	
-	// Set regular channel sequence length to 1
-	ADC_Init_S.ADC_NbrOfConversion = 1; 
-	
-	// Enable temperature sensor
-	ADC_TempSensorVrefintCmd(ENABLE);
-	
-	// Enable ADC1
-	ADC_Cmd(ADC1, ENABLE); 
-	
-	// Enable ADC1 and connect to 16th channel (temperature sensor), while giving it first rank in sequencer and a sample time of 480 cycles
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_16, 1, ADC_SampleTime_480Cycles); 
-	
-	// Initialize ADC1 to values of previously defined struct
-	ADC_Init(ADC1, &ADC_Init_S); 
+
 	
 	
 }
-/* Private variables ---------------------------------------------------------*/
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config	(void);
-
 
 int main(void)
 {
@@ -91,11 +73,10 @@ int main(void)
 	
   /* Configure the system clock */
   SystemClock_Config();
-	
+	config_ADC_temp();
 	
 	// Insert our system here
-	STM_EVAL_LEDInit(LED3);
-	STM_EVAL_LEDOn(LED3);
+
 //	while (1){
 //		
 //		
