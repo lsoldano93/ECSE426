@@ -24,11 +24,12 @@ void SystemClock_Config	(void);
 
 /* Initialize -------------------------------------------------------------------*/
 void config_ADC_temp(void) {
-	
+
 	ADC_InitTypeDef ADC1_itd;
 	ADC_ChannelConfTypeDef ADC1_ch16;
 	
-	// TODO: Enable ADC clock
+	// Enable ADC clock
+	__HAL_RCC_ADC1_CLK_ENABLE();
 	
 	// Initialize values for ADC1 init type def
 	ADC1_itd.Resolution = ADC_RESOLUTION_12B;    									// 12 bit resolution      
@@ -50,10 +51,12 @@ void config_ADC_temp(void) {
 	// Initialize values for temperature sensor (Temperature analog channel is Ch16 of ADC1)
 	ADC1_ch16.Channel = ADC_CHANNEL_16;
 	ADC1_ch16.Rank = 1;
+
 	ADC1_ch16.SamplingTime = ADC_SAMPLETIME_480CYCLES;
 	ADC1_ch16.Offset = 0;
 	
 	// Initialize and start ADC1
+
 	HAL_ADC_Init(&ADC1_Handle);
 	HAL_ADC_Start(&ADC1_Handle);	
 	
@@ -64,7 +67,17 @@ void config_ADC_temp(void) {
 	
 	
 }
+float getTemperature() {
+	//HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef* hadc, uint32_t Timeout)
 
+	float temp = HAL_ADC_PollForConversion(&ADC1_Handle, 200);
+	HAL_ADC_GetValue(&ADC1_Handle); //gets the temperature voltage value
+	
+	//uint32_t HAL_ADC_GetError(ADC_HandleTypeDef *hadc); //error handling
+	
+	return (temp*3000/4096 - 760)/2.5 + 25; //4096 is when 3V is applied, all 12 bits will be on, ADC returns what percentage of that it sees
+	
+}
 int main(void)
 {
   /* MCU Configuration----------------------------------------------------------*/
@@ -75,13 +88,14 @@ int main(void)
   SystemClock_Config();
 	config_ADC_temp();
 	
+//	HAL_SYSTICK_Config(SystemCoreClock/50); //tick every 20 ms //Input value must be less than 24 bits
+	
 	// Insert our system here
 
-//	while (1){
-//		
-//		
-//		
-//	}
+	while(1) {
+		float temp = getTemperature();
+		printf("Tempertaure: %f",temp);
+	}
 }
 
 
