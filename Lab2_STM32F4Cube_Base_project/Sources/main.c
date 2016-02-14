@@ -15,12 +15,21 @@
 #include "stm32f4xx_hal_gpio.h"
 #include "supporting_functions.h"
 
+typedef struct kalman_t{
+	float q;
+	float r;
+	float x;
+	float p;
+	float k;
+} kalman_t;
+
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef ADC1_Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 void config_ADC_temp(void);
 void SystemClock_Config	(void);
+int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kalman_t* kalman);
 
 /* Initialize -------------------------------------------------------------------*/
 void config_ADC_temp(void) {
@@ -67,6 +76,11 @@ void config_ADC_temp(void) {
 	
 	
 }
+void gpioConfig() {
+	//PC0-PC3: Segments controls 1,2,3,4
+	//PA0: Dp
+	//PA1-PA7: A-G
+}
 float getTemperature() {
 	//HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef* hadc, uint32_t Timeout)
 
@@ -78,6 +92,7 @@ float getTemperature() {
 	return (temp*3000/4096 - 760)/2.5 + 25; //4096 is when 3V is applied, all 12 bits will be on, ADC returns what percentage of that it sees
 	
 }
+
 int main(void)
 {
   /* MCU Configuration----------------------------------------------------------*/
