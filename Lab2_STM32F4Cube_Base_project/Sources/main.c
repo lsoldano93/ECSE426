@@ -50,7 +50,9 @@ void config_ADC_temp(void) {
 	ADC1_itd.NbrOfConversion = 1;       													// Single conversion (per call?)
 	ADC1_itd.DiscontinuousConvMode = DISABLE;  
 	ADC1_itd.NbrOfDiscConversion = 0;    
-	ADC1_itd.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;       
+	
+	// ***Check these two last values, not sure if they are right***
+	ADC1_itd.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T8_CC1;       
 	ADC1_itd.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;  
 	
 	// Initialize values for ADC1 handle type def
@@ -64,10 +66,7 @@ void config_ADC_temp(void) {
 	ADC1_ch16.SamplingTime = ADC_SAMPLETIME_480CYCLES;
 	ADC1_ch16.Offset = 0;
 	
-	// Initialize and start ADC1
-
-	HAL_ADC_Init(&ADC1_Handle);
-	HAL_ADC_Start(&ADC1_Handle);	
+	
 	
 	// Configure temperature sensor peripheral 
 	HAL_ADC_ConfigChannel(&ADC1_Handle, &ADC1_ch16);
@@ -80,17 +79,50 @@ void gpioConfig() {
 	//PC0-PC3: Segments controls 1,2,3,4
 	//PA0: Dp
 	//PA1-PA7: A-G
+	
+
+	GPIO_InitTypeDef GPIO_InitA, GPIO_InitC;
+	
+	// Enable clocks for ports A & B
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	
+	//Initialization still needs work
+	
+	GPIO_InitA.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
+	GPIO_InitA.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitA.Pull = GPIO_PULLUP;
+	GPIO_InitA.Speed =  GPIO_SPEED_FREQ_HIGH;
+	//GPIO_Init.Alternate = ;
+	
+	
+	GPIO_InitC.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3;
+	GPIO_InitC.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitC.Pull = GPIO_PULLUP;
+	GPIO_InitC.Speed =  GPIO_SPEED_FREQ_HIGH;
+	//GPIO_Init.Alternate = ;
+	
+	HAL_GPIO_Init(GPIOA, &GPIO_InitA);
+	HAL_GPIO_Init(GPIOC, &GPIO_InitC);
+	
+	
 }
 float getTemperature() {
 	//HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef* hadc, uint32_t Timeout)
 
-	float temp = HAL_ADC_PollForConversion(&ADC1_Handle, 200);
+	float VSENSE, Avg_Slope, V25, temp;	
+	
+	VSENSE= HAL_ADC_PollForConversion(&ADC1_Handle, 200);
 	HAL_ADC_GetValue(&ADC1_Handle); //gets the temperature voltage value
+	
+	Avg_Slope = (125+40)/((3.6-1.8)*1000); //micro celcius/V
+	V25 = Avg_Slope*25;
 	
 	//uint32_t HAL_ADC_GetError(ADC_HandleTypeDef *hadc); //error handling
 	
-	return (temp*3000/4096 - 760)/2.5 + 25; //4096 is when 3V is applied, all 12 bits will be on, ADC returns what percentage of that it sees
+	// Temperature (in °C) = {(VSENSE – V25) / Avg_Slope} + 25
 	
+	return temp = ((VSENSE - V25)/Avg_Slope) + 25;
 }
 
 int main(void)
@@ -103,13 +135,19 @@ int main(void)
   SystemClock_Config();
 	config_ADC_temp();
 	
+	// Initialize and start ADC1
+
+	HAL_ADC_Init(&ADC1_Handle);
+
+	
 //	HAL_SYSTICK_Config(SystemCoreClock/50); //tick every 20 ms //Input value must be less than 24 bits
 	
 	// Insert our system here
-
+ 
 	while(1) {
 		float temp = getTemperature();
-		printf("Tempertaure: %f",temp);
+		HAL_ADC_Start(&ADC1_Handle);	
+		printf("Tempertaure: %f \n",temp);
 	}
 }
 
