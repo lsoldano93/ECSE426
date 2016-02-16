@@ -14,6 +14,10 @@
 #include "stm32f4xx_hal_conf.h"
 #include "stm32f4xx_hal_gpio.h"
 #include "supporting_functions.h"
+#include "global_vars.h"
+
+#define AVG_SLOPE (125 + 40) / ((3.6 - 1.8) * 1000)
+#define ALARM_THRESHOLD_TEMP 60
 
 typedef struct kalman_t{
 	float q;
@@ -25,6 +29,7 @@ typedef struct kalman_t{
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef ADC1_Handle;
+float	V25 = AVG_SLOPE * 25;
 
 /* Private function prototypes -----------------------------------------------*/
 void config_ADC_temp(void);
@@ -47,7 +52,7 @@ void config_ADC_temp(void) {
 	ADC1_itd.EOCSelection = ADC_EOC_SINGLE_CONV;           				// Single conversion mode
 	ADC1_itd.ContinuousConvMode = DISABLE;     
 	ADC1_itd.DMAContinuousRequests = ADC_DMAACCESSMODE_DISABLED;  
-	ADC1_itd.NbrOfConversion = 1;       													// Single conversion (per call?)
+	ADC1_itd.NbrOfConversion = 1;       													// Single conversion per call
 	ADC1_itd.DiscontinuousConvMode = DISABLE;  
 	ADC1_itd.NbrOfDiscConversion = 0;    
 	
@@ -66,8 +71,6 @@ void config_ADC_temp(void) {
 	ADC1_ch16.SamplingTime = ADC_SAMPLETIME_480CYCLES;
 	ADC1_ch16.Offset = 0;
 	
-	
-	
 	// Configure temperature sensor peripheral 
 	HAL_ADC_ConfigChannel(&ADC1_Handle, &ADC1_ch16);
 	
@@ -76,6 +79,8 @@ void config_ADC_temp(void) {
 	
 }
 void gpioConfig() {
+	// WARNING: DO NOT USE PORT A13, PORT A14, or PORT B3
+	
 	//PC0-PC3: Segments controls 1,2,3,4
 	//PA0: Dp
 	//PA1-PA7: A-G
@@ -110,23 +115,25 @@ void gpioConfig() {
 float getTemperature() {
 	//HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef* hadc, uint32_t Timeout)
 
-	float VSENSE, Avg_Slope, V25, temp;	
+	float VSENSE, temp;	
 	
-	VSENSE= HAL_ADC_PollForConversion(&ADC1_Handle, 200);
+	VSENSE = HAL_ADC_PollForConversion(&ADC1_Handle, 200);
 	HAL_ADC_GetValue(&ADC1_Handle); //gets the temperature voltage value
-	
-	Avg_Slope = (125+40)/((3.6-1.8)*1000); //micro celcius/V
-	V25 = Avg_Slope*25;
 	
 	//uint32_t HAL_ADC_GetError(ADC_HandleTypeDef *hadc); //error handling
 	
-	// Temperature (in °C) = {(VSENSE – V25) / Avg_Slope} + 25
+	// Temperature (in °C) = {(VSENSE – V25) / AVG_SLOPE} + 25
 	
-	return temp = ((VSENSE - V25)/Avg_Slope) + 25;
+	return temp = ((VSENSE - V25)/AVG_SLOPE) + 25;
 }
 
 int main(void)
 {
+	float temp;
+	
+	// Give ticks an initial value
+	ticks = 0;
+	
   /* MCU Configuration----------------------------------------------------------*/
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
@@ -135,20 +142,28 @@ int main(void)
   SystemClock_Config();
 	config_ADC_temp();
 	
-	// Initialize and start ADC1
-
+	// Initialize ADC1 and check to make sure it happened
 	HAL_ADC_Init(&ADC1_Handle);
+	if (HAL_ADC_Init(&ADC1_Handle) != HAL_OK) Error_Handler(ADC_INIT_FAIL);
 
-	
-//	HAL_SYSTICK_Config(SystemCoreClock/50); //tick every 20 ms //Input value must be less than 24 bits
-	
-	// Insert our system here
  
 	while(1) {
-		float temp = getTemperature();
-		HAL_ADC_Start(&ADC1_Handle);	
-		printf("Tempertaure: %f \n",temp);
+		
+		// Wait for ticks flag to be set high by SysTick
+		if (ticks){
+			
+			// Ping ADC for reading and obtain temperature
+			HAL_ADC_Start(&ADC1_Handle);	
+			temp = getTemperature();
+
+			printf("Tempertaure: %f \n",temp);
+		
+			// Set global tick variable to 0 and wait for SysTick to reset flag
+			ticks = 0;
+		}
 	}
+	
+return NULL;
 }
 
 

@@ -414,6 +414,11 @@
           <GroupName>Source Files</GroupName>
           <Files>
             <File>
+              <FileName>global_vars.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\global_vars.h</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\main.c</FilePath>
@@ -432,6 +437,11 @@
               <FileName>stm32f4xx_it.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\stm32f4xx_it.c</FilePath>
+            </File>
+            <File>
+              <FileName>Kalmanfilter_asm.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
             </File>
           </Files>
         </Group>

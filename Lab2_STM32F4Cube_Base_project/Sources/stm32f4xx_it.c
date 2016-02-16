@@ -40,6 +40,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
+#include "global_vars.h"
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
@@ -156,6 +157,9 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
 		HAL_IncTick();
+	
+		// Set flag for main.c to continue running of while loop
+		ticks = 1;
 }
 
 /******************************************************************************/
