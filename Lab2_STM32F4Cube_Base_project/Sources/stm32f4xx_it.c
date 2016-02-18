@@ -156,15 +156,25 @@ void PendSV_Handler(void)
   */
 //added this statement for the delay timer
 __IO uint32_t TimmingDelay;
+__IO uint32_t TimerDelay;
 void SysTick_Handler(void)
 {
 		
 		if(TimmingDelay !=0) {
 			TimmingDelay --;
 		}
+		if(TimerDelay != 0) {
+			TimerDelay--;
+		}
 		HAL_IncTick();
+		
 		// Set flag for main.c to continue running of while loop
 		ticks = 1;
+		
+		// Alarm counter for display LEDs
+		alarmCount++;
+		if (alarmCount > 2000) alarmCount = 0;
+		
 }
 
 /******************************************************************************/

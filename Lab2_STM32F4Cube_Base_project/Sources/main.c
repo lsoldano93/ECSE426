@@ -18,7 +18,12 @@
 
 #define AVG_SLOPE (125 + 40) / ((3.6 - 1.8) * 1000)
 #define ALARM_THRESHOLD_TEMP 20
-
+#define ARRAY_LENGTH 1
+#define kalmanQ 0.1
+#define kalmanR 0.1
+#define kalmanX 24.9			// Standard base room temp reading of sensor
+#define kalmanP 0.0
+#define kalmanK 0.0
 
 typedef struct kalman_t{
 	float q;
@@ -32,6 +37,7 @@ typedef struct kalman_t{
 ADC_HandleTypeDef ADC1_Handle;
 float	V25 = AVG_SLOPE * 25;
 int ticks = 0;
+int alarmCount = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void ADC_Config(void);
@@ -43,9 +49,12 @@ void lightDigit(int digit);
 int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kalman_t* kalman);
 void tempAlarm();
 void Delay(__IO uint32_t time);
+int timer(__IO uint32_t time);
 extern __IO uint32_t TimmingDelay;
-
+extern __IO uint32_t TimerDelay;
 /* Initialize -------------------------------------------------------------------*/
+
+/** ADC Configuration */
 void ADC_Config(void) {
 
 	ADC_InitTypeDef ADC1_itd;
@@ -83,21 +92,22 @@ void ADC_Config(void) {
 	// Configure temperature sensor peripheral 
 	HAL_ADC_ConfigChannel(&ADC1_Handle, &ADC1_ch16);
 	
-
-	
-	
 }
+
+
+/** GPIO Configuration */
 void GPIO_Config() {
 	
 	// WARNING: DO NOT USE PORT A13, PORT A14, or PORT B3
-	/* GPIO Pin Mapping
-		 Segment Ctrls {S1:PC1, S2:PC2, S3:PC4, S4:PC5}
+	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:CCD123, 5:E, 6:CCD3, 
+	   7:DP, 8:CCD4, 9:, 10:, 11:F, 12:, 13:C, 14:A, 15:G, 16:B}
+	   GPIO Pin Mapping
+		 Segment Ctrls {CCD1:PC1, CCD2:PC2, CCD3:PC4, CCD4:PC5}
 		 DP Ctrl 	     {DP:PC6}
-		 Segments      {A:PB0, B:PB1, C:PB2, D:PB11, E:PB12, F:PB13, G:PB14 
+		 Segments      {A:PB0, B:PB1, C:PB4, D:PB11, E:PB12, F:PB13, G:PB14 
 	Alarm LED : PD13
 	*/
 	
-
 	GPIO_InitTypeDef GPIO_InitB, GPIO_InitC, GPIO_InitD;
 	
 	// Enable clocks for ports B & C & D
@@ -105,120 +115,120 @@ void GPIO_Config() {
 	__HAL_RCC_GPIOC_CLK_ENABLE();
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 	
-	GPIO_InitB.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14;
+	// Give initialization values for GPIO B pin sets
+	GPIO_InitB.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_5 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14;
 	GPIO_InitB.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitB.Pull = GPIO_PULLUP;
 	GPIO_InitB.Speed =  GPIO_SPEED_FREQ_HIGH;
-	//GPIO_Init.Alternate = ;
 	
-	
+	// Give initialization values for GPIO C pin sets
 	GPIO_InitC.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6;
 	GPIO_InitC.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitC.Pull = GPIO_PULLUP;
 	GPIO_InitC.Speed =  GPIO_SPEED_FREQ_HIGH;
-	//GPIO_Init.Alternate = ;
 	
+	// Give initialization values for GPIO D pin sets
 	GPIO_InitD.Pin = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
 	GPIO_InitD.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitD.Pull = GPIO_PULLUP;
 	GPIO_InitD.Speed =  GPIO_SPEED_FREQ_HIGH;
-	//GPIO_Init.Alternate = ;
 	
+	// Initialize all GPIO pin sets
 	HAL_GPIO_Init(GPIOB, &GPIO_InitB);
 	HAL_GPIO_Init(GPIOC, &GPIO_InitC);
 	HAL_GPIO_Init(GPIOD, &GPIO_InitD);
 
-	
 }
+
+
+/** Method for obtaining temperature */
 float getTemp() {
-	//HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef* hadc, uint32_t Timeout)
 
 	float VSENSE, temp;	
 	HAL_ADC_Start(&ADC1_Handle);	
 
+	// Obtain temperature value from ADC
 	VSENSE = HAL_ADC_PollForConversion(&ADC1_Handle, 200);
 	HAL_ADC_GetValue(&ADC1_Handle); //gets the temperature voltage value
 	HAL_ADC_Stop(&ADC1_Handle);
-	//uint32_t HAL_ADC_GetError(ADC_HandleTypeDef *hadc); //error handling
 	
 	// Temperature (in °C) = {(VSENSE – V25) / AVG_SLOPE} + 25
-	
 	return temp = ((VSENSE - V25)/AVG_SLOPE) + 25;
+	
 }
 
+
+/** Method for determining temperature display values */
 void displayTemp(float temp){
-	     
-	/* GPIO Pin Mapping
-	   Segment Ctrls {S1:PC1, S2:PC2, S3:PC4, S4:PC5}
+	
+	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:CCD123, 5:E, 6:CCD3, 
+	   7:DP, 8:CCD4, 9:, 10:, 11:F, 12:, 13:C, 14:A, 15:G, 16:B}	
+	   GPIO Pin Mapping
+	   Segment Ctrls {CCD1:PC1, CCD2:PC2, CCD3:PC4, CCD4:PC5}
 		 DP Ctrl 	     {DP:PC6}
-		 Segments      {A:PB0, B:PB1, C:PB2, D:PB11, E:PB12, F:PB13, G:PB14 */
+		 Segments      {A:PB0, B:PB1, C:PB4, D:PB11, E:PB12, F:PB13, G:PB14 */
 	
 	int displayValues, i;
 	int tempValue[4];
 	
 	// Determine how many values to display and what each individual value is
-		if (temp >= 100.0){
-			displayValues = 4;
-			tempValue[0] = temp/100;
-			tempValue[1] = temp/10 - tempValue[0]*10;
-			tempValue[2] = temp - tempValue[0]*100 - tempValue[1]*10;
-			tempValue[3] = (temp*10 - tempValue[0]*1000 - tempValue[1]*100 - tempValue[2]*10);
+	// Four digits to display (format xyz.a)
+	if (temp >= 100.0){
+		displayValues = 4;
+		tempValue[0] = temp/100;
+		tempValue[1] = temp/10 - tempValue[0]*10;
+		tempValue[2] = temp - tempValue[0]*100 - tempValue[1]*10;
+		tempValue[3] = (temp*10 - tempValue[0]*1000 - tempValue[1]*100 - tempValue[2]*10);
+	
+	}
+	else {
 		
+		// Three digits to display (format xy.z)
+		if (temp >= 10.0){
+				displayValues = 3;
+				tempValue[1] = temp/10;
+				tempValue[2] = temp - tempValue[1]*10;
+				tempValue[3] = (temp*10 - tempValue[1]*100 - tempValue[2]*10);	
 		}
+		
+		// Two digits to display (format x.y or 0.x)
 		else {
-			if (temp >= 10.0){
-					displayValues = 3;
-					tempValue[1] = temp/10;
-					tempValue[2] = temp - tempValue[1]*10;
-					tempValue[3] = (temp*10 - tempValue[1]*100 - tempValue[2]*10);
-					printf("temp1: %d%d.%d\n", tempValue[1],tempValue[2],tempValue[3]);
-				
-			}
-			else {
-					if (temp >= 1.0){
-							displayValues = 2;
-							tempValue[2] = temp;
-						printf("temp2: %d\n", tempValue[2]);
-							tempValue[3] = (temp*10 - tempValue[2]*10);
-						printf("temp3: %d\n", tempValue[3]);
-					}
-					else{
-						displayValues = 2;
-						tempValue[3] = temp*10;
-						printf("temp3: %d\n", tempValue[3]);
-					}
-			}
+				displayValues = 2;
+				tempValue[2] = temp;
+				tempValue[3] = (temp*10 - tempValue[2]*10);
 		}
+	}
 	
 	for(i=4; i>0; i--) {
+		
 		switch(i) {
 			case 4:
-				//state
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);   //segment 1
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); //segment 2
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); //segment 2
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); //segment 2
+				// Enable changes for first digit display
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);   // Digit 1
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); // Digit 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); // Digit 3
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); // Digit 4
 				break;
 			case 3:
-				//state
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); //segment 1
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);   //segment 2
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); //segment 2
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); //segment 2
+				// Enable changes for second digit display
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); // Digit 1
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);   // Digit 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); // Digit 3
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); // Digit 4
 				break;
 			case 2:
-				//state
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);  //segment 1
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); //segment 2
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_SET);   //segment 2
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); //segment 2
+				// Enable changes for third digit display
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); // Digit 1
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); // Digit 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_SET);   // Digit 3
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); // Digit 4
 				break;
 			case 1:
-				//state
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); //segment 1
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); //segment 2
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); //segment 2
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);   //segment 2
+				// Enable changes for fourth digit display
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); // Digit 1
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); // Digit 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); // Digit 3
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);   // Digit 4
 				break;
 	
 			default:
@@ -237,22 +247,32 @@ void displayTemp(float temp){
 			lightDigit(tempValue[4-i]);	
 			
 		}
-		printf("i:%d  ",i);
+		
+		Delay(5);
+		//printf("i:%d  ",i);
 		
 	}	
 	
-	Delay(500);
 }
 	
 
+/** Method for lighting segment displays by number */
 void lightDigit(int digit) {
+	
+	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:CCD123, 5:E, 6:CCD3, 
+	   7:DP, 8:CCD4, 9:, 10:, 11:F, 12:, 13:C, 14:A, 15:G, 16:B}	
+	   GPIO Pin Mapping
+	   Segment Ctrls {CCD1:PC1, CCD2:PC2, CCD3:PC4, CCD4:PC5}
+		 DP Ctrl 	     {DP:PC6}
+		 Segments      {A:PB0, B:PB1, C:PB4, D:PB11, E:PB12, F:PB13, G:PB14 */
+	
 	switch(digit) {
 			case 0:
-				//state
-				printf("Case %d", digit);
+				// Zeroth state, display number zero
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
@@ -260,11 +280,11 @@ void lightDigit(int digit) {
 				break;
 			
 			case 1:
-				//state
-				printf("Case %d", digit);
+				// First state, display number one
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
@@ -272,11 +292,11 @@ void lightDigit(int digit) {
 				break;
 
 			case 2:
-				//state
-				printf("Case %d", digit);
+				// Second state, display number two
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
@@ -284,11 +304,11 @@ void lightDigit(int digit) {
 				break;
 			
 			case 3:
-				//state
-				printf("Case %d", digit);
+				// Third state, display number three
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
@@ -296,11 +316,11 @@ void lightDigit(int digit) {
 				break;
 			
 			case 4:
-				//state
-				printf("Case %d", digit);
+				// Fourth state, display number four
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
@@ -308,11 +328,11 @@ void lightDigit(int digit) {
 				break;
 			
 			case 5:
-				//state
-				printf("Case %d", digit);
+				// Fifth state, display number five
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
@@ -320,11 +340,11 @@ void lightDigit(int digit) {
 				break;
 			
 			case 6:
-				//state
-				printf("Case %d", digit);
+				// Sixth state, display number six
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
@@ -332,11 +352,11 @@ void lightDigit(int digit) {
 				break;
 
 			case 7:
-				//state
-				printf("Case %d", digit);
+				// Seventh state, display number seven
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
@@ -344,11 +364,11 @@ void lightDigit(int digit) {
 				break;
 			
 			case 8:
-				//state
-				printf("Case %d", digit);
+				// Eighth state, display number eight
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
@@ -356,11 +376,11 @@ void lightDigit(int digit) {
 				break;
 			
 			case 9:
-				//state
-				printf("Case %d", digit);
+				// Ninth state, display number nine
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
@@ -368,11 +388,11 @@ void lightDigit(int digit) {
 				break;
 			
 			case 10:
-				//state
-				printf("Case %d", digit);
+				// Null state, display blank digit
+				//printf("Case %d", digit);
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); //a
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET); //b
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //c
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); //d
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
@@ -382,37 +402,78 @@ void lightDigit(int digit) {
 			default:
 				break;
 		}
-}
-void tempAlarm() {
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET); //green light
-	Delay(500);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET); //turn off greenlight
 	
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET); //orange light
-	Delay(500);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET); //turn off organge 
-	
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET); //red light
-	Delay(500);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET); //turn off red light
-	
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET); //blue light
-	Delay(500);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET); //turn off  bluelight
 }
 
+
+/** Method for alarm lighting */
+void tempAlarm() {
+	
+	// Green light on
+	if (alarmCount < 500){
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+	}
+	else {
+		
+		// Orange light on
+		if (alarmCount < 1000){
+			HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
+		}
+		else{
+			
+			// Red light on
+			if (alarmCount < 1500){
+				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+			}
+			
+			// Blue light on
+			else{
+				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+			}
+		}
+	}
+
+}
+
+
+/** Method for clock delay */
 void Delay(__IO uint32_t time)
 {
+	
   TimmingDelay = time;
   while(TimmingDelay !=0);
+	
 }         
+int timer(__IO uint32_t time) {
+	TimerDelay = time;
 
+	while(TimerDelay !=0);
+	return 1;
+}
+
+/** Main method */
 int main(void)
 {
-	float temp;
 	
-	// Give ticks an initial value
+	int counter;
+	float temp, temps[ARRAY_LENGTH], output[ARRAY_LENGTH];
+	kalman_t kalmanFilter;
+	
+	// Give kalmanFilter, temp, ticks initial values
+	counter = 0;
+	temp = 0;
 	ticks = 0;
+	alarmCount = 0;
+	
+	kalmanFilter.q = kalmanQ;
+	kalmanFilter.r = kalmanR;
+	kalmanFilter.x = kalmanX;
+	kalmanFilter.p = kalmanP;
+	kalmanFilter.k = kalmanK;
 	
   /* MCU Configuration----------------------------------------------------------*/
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -423,30 +484,38 @@ int main(void)
 	ADC_Config();
 	GPIO_Config();
 	
-	
 	// Initialize ADC1 and check to make sure it happened
 	HAL_ADC_Init(&ADC1_Handle);
 	if (HAL_ADC_Init(&ADC1_Handle) != HAL_OK) Error_Handler(ADC_INIT_FAIL);
-	
-	while(1) {
-		// Wait for ticks flag to be set high by SysTick
-		
-		
-		if (ticks){
-//			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET); //segment 2
-//			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
 
-			// Ping ADC for reading and obtain temperature
-			temp = getTemp();
-			
-			displayTemp(temp);
-			printf("Tempertaure: %f \n",temp);
+	while(1) {
 		
+		// Wait for ticks flag to be set high by SysTick
+		if (ticks){
+
+			counter++;
+			
+			if (counter == 10){
+				// Ping ADC for reading and obtain temperature
+				temps[0] = getTemp();
+					
+				// Pass values to assembly filter and set last filtered output as current temp
+				Kalmanfilter_asm(temps, output, ARRAY_LENGTH, &kalmanFilter);
+				temp = output[0];
+				
+				printf("Temperature_Filter = %f, Temperature_Reading = %f16\n", temp, temps[0]);
+				counter = 0;
+			}
+			
 			// Set global tick variable to 0 and wait for SysTick to reset flag
 			ticks = 0;
 		}
 		
-		if (){
+		// Display temperature
+		displayTemp(temp);
+		
+		// Trigger alarm if proper time has passed and temperature greater than threshold
+		if (timer(5) == 1){
 			if(temp >= ALARM_THRESHOLD_TEMP) {
 				tempAlarm();
 			}
@@ -460,8 +529,8 @@ int main(void)
 }
 	
 return NULL;
-}
 
+}
 
 
 /** System Clock Configuration */
@@ -500,6 +569,7 @@ void SystemClock_Config(void){
 
   /* SysTick_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+	
 }
 
 /**
@@ -517,5 +587,7 @@ void SystemClock_Config(void){
    * @retval None
    */
 void assert_failed(uint8_t* file, uint32_t line){
+	
 }
+
 #endif

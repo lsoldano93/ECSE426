@@ -3,5 +3,6 @@
 
 /* Public variables ----------------------------------------------------------*/
 extern int ticks;
+extern int alarmCount;
 
 #endif
