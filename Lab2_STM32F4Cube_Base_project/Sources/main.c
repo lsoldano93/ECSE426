@@ -17,7 +17,8 @@
 #include "global_vars.h"
 
 #define AVG_SLOPE (125 + 40) / ((3.6 - 1.8) * 1000)
-#define ALARM_THRESHOLD_TEMP 60
+#define ALARM_THRESHOLD_TEMP 20
+
 
 typedef struct kalman_t{
 	float q;
@@ -40,6 +41,9 @@ float getTemp(void);
 void displayTemp(float temp);
 void lightDigit(int digit);
 int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kalman_t* kalman);
+void tempAlarm();
+void Delay(__IO uint32_t time);
+extern __IO uint32_t TimmingDelay;
 
 /* Initialize -------------------------------------------------------------------*/
 void ADC_Config(void) {
@@ -89,16 +93,18 @@ void GPIO_Config() {
 	/* GPIO Pin Mapping
 		 Segment Ctrls {S1:PC1, S2:PC2, S3:PC4, S4:PC5}
 		 DP Ctrl 	     {DP:PC6}
-		 Segments      {A:PB0, B:PB1, C:PB2, D:PB11, E:PB12, F:PB13, G:PB14 */
+		 Segments      {A:PB0, B:PB1, C:PB2, D:PB11, E:PB12, F:PB13, G:PB14 
+	Alarm LED : PD13
+	*/
 	
 
-	GPIO_InitTypeDef GPIO_InitB, GPIO_InitC;
+	GPIO_InitTypeDef GPIO_InitB, GPIO_InitC, GPIO_InitD;
 	
-	// Enable clocks for ports B & C
+	// Enable clocks for ports B & C & D
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
 	
-	// TODO: Initialization still needs work
 	GPIO_InitB.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14;
 	GPIO_InitB.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitB.Pull = GPIO_PULLUP;
@@ -112,9 +118,16 @@ void GPIO_Config() {
 	GPIO_InitC.Speed =  GPIO_SPEED_FREQ_HIGH;
 	//GPIO_Init.Alternate = ;
 	
+	GPIO_InitD.Pin = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
+	GPIO_InitD.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitD.Pull = GPIO_PULLUP;
+	GPIO_InitD.Speed =  GPIO_SPEED_FREQ_HIGH;
+	//GPIO_Init.Alternate = ;
+	
 	HAL_GPIO_Init(GPIOB, &GPIO_InitB);
 	HAL_GPIO_Init(GPIOC, &GPIO_InitC);
-	
+	HAL_GPIO_Init(GPIOD, &GPIO_InitD);
+
 	
 }
 float getTemp() {
@@ -140,79 +153,95 @@ void displayTemp(float temp){
 		 DP Ctrl 	     {DP:PC6}
 		 Segments      {A:PB0, B:PB1, C:PB2, D:PB11, E:PB12, F:PB13, G:PB14 */
 	
-	int displayValues, digit, tempValue4, tempValue3, tempValue2, tempValue1, i;
+	int displayValues, i;
+	int tempValue[4];
+	
+	// Determine how many values to display and what each individual value is
+		if (temp >= 100.0){
+			displayValues = 4;
+			tempValue[0] = temp/100;
+			tempValue[1] = temp/10 - tempValue[0]*10;
+			tempValue[2] = temp - tempValue[0]*100 - tempValue[1]*10;
+			tempValue[3] = (temp*10 - tempValue[0]*1000 - tempValue[1]*100 - tempValue[2]*10);
+		
+		}
+		else {
+			if (temp >= 10.0){
+					displayValues = 3;
+					tempValue[1] = temp/10;
+					tempValue[2] = temp - tempValue[1]*10;
+					tempValue[3] = (temp*10 - tempValue[1]*100 - tempValue[2]*10);
+					printf("temp1: %d%d.%d\n", tempValue[1],tempValue[2],tempValue[3]);
+				
+			}
+			else {
+					if (temp >= 1.0){
+							displayValues = 2;
+							tempValue[2] = temp;
+						printf("temp2: %d\n", tempValue[2]);
+							tempValue[3] = (temp*10 - tempValue[2]*10);
+						printf("temp3: %d\n", tempValue[3]);
+					}
+					else{
+						displayValues = 2;
+						tempValue[3] = temp*10;
+						printf("temp3: %d\n", tempValue[3]);
+					}
+			}
+		}
 	
 	for(i=4; i>0; i--) {
-		switch(digit) {
+		switch(i) {
 			case 4:
 				//state
-				HAL_GPIO_WritePin(GPIOC, 1, GPIO_PIN_SET); //segment 4
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);   //segment 1
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); //segment 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); //segment 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); //segment 2
 				break;
 			case 3:
 				//state
-				HAL_GPIO_WritePin(GPIOC, 2, GPIO_PIN_SET); //segment 3
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); //segment 1
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);   //segment 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); //segment 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); //segment 2
 				break;
 			case 2:
 				//state
-				HAL_GPIO_WritePin(GPIOC, 4, GPIO_PIN_SET); //segment 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);  //segment 1
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); //segment 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_SET);   //segment 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); //segment 2
 				break;
 			case 1:
 				//state
-				HAL_GPIO_WritePin(GPIOC,5, GPIO_PIN_SET); //segment 1
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); //segment 1
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); //segment 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); //segment 2
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);   //segment 2
 				break;
 	
 			default:
 				break;
+		} 
+		
+		// Light proper number on display, lighting 10 indicates blank display value
+		if (i > displayValues) {
+			lightDigit(10);
 		}
-		lightDigit(4);
+		else {
+			// Set decimal point on third value
+			if (i == 2) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			else HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+			
+			lightDigit(tempValue[4-i]);	
+			
+		}
+		printf("i:%d  ",i);
 		
-		
-	}
-	// Determine how many values to display and what each individual value is
-//	if (temp >= 100.0){
-//		displayValues = 4;
-//		tempValue4 = temp/100;
-//		tempValue3 = temp/10 - tempValue4*10;
-//		tempValue2 = temp - tempValue4*100 - tempValue3*10;
-//		tempValue1 = (temp - tempValue4*100 - tempValue3*10 - tempValue2)*10;
-//	}
-//	else {
-//		if (temp >= 10.0){
-//				displayValues = 3;
-//				tempValue3 = temp/10;
-//				tempValue2 = temp - tempValue3*10;
-//				tempValue1 = (temp - tempValue3*10 - tempValue2)*10;
-//		}
-//		else {
-//				if (temp >= 1.0){
-//						displayValues = 2;
-//						tempValue2 = temp;
-//						tempValue1 = (temp - tempValue2)*10;
-//				}
-//				else{
-//					displayValues = 1;
-//					tempValue1 = temp*10;
-//				}
-//		}
-//	}
-		
-	// Set GPIO pins to dispaly segments
-//	for (i=4; i > 0; i--){
-//		
-//		// Display nothing
-//		if (i <= displayValues){
-//			
-//		}
-//		//Segments      {A:PB0, B:PB1, C:PB2, D:PB11, E:PB12, F:PB13, G:PB14
-//		//void HAL_GPIO_WritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState);
-//		//void HAL_GPIO_TogglePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
-//		
-//		
-//	}
+	}	
 	
-	//segment controls
-	// Segment Ctrls {S1:PC1, S2:PC2, S3:PC4, S4:PC5}
-	
+	Delay(500);
 }
 	
 
@@ -220,120 +249,163 @@ void lightDigit(int digit) {
 	switch(digit) {
 			case 0:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_SET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_SET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_SET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_SET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_RESET); //g
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); //g
 				break;
 			
 			case 1:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_RESET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_SET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_RESET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_RESET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_RESET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_RESET); //g
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); //g
+				break;
 
 			case 2:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_SET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_RESET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_SET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_SET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_RESET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //g
-
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); //g
+				break;
+			
 			case 3:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_SET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_SET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_SET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_RESET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_RESET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //g
-
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); //g
+				break;
+			
 			case 4:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_RESET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_SET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_RESET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_RESET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //g			
-
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); //g			
+				break;
+			
 			case 5:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_SET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_RESET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_SET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_SET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_RESET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //g
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); //g
 				break;
 			
 			case 6:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_SET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_RESET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_SET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_SET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_SET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //g
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); //g
+				break;
 
 			case 7:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_SET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_SET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_RESET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_RESET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_RESET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_RESET); //g
-
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); //g
+				break;
+			
 			case 8:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_SET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_SET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_SET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_SET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //g
-
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); //g
+				break;
+			
 			case 9:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_SET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_SET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_SET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_SET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_RESET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_SET); //g			
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); //g			
+				break;
 			
 			case 10:
 				//state
-				HAL_GPIO_WritePin(GPIOA, 0, GPIO_PIN_RESET); //a
-				HAL_GPIO_WritePin(GPIOA, 1, GPIO_PIN_RESET); //b
-				HAL_GPIO_WritePin(GPIOA, 2, GPIO_PIN_RESET); //c
-				HAL_GPIO_WritePin(GPIOA, 11, GPIO_PIN_RESET); //d
-				HAL_GPIO_WritePin(GPIOA, 12, GPIO_PIN_RESET); //e
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_RESET); //f
-				HAL_GPIO_WritePin(GPIOA, 13, GPIO_PIN_RESET); //g		
+				printf("Case %d", digit);
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); //a
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET); //b
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET); //c
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); //d
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); //g		
+				break;
 				
 			default:
 				break;
 		}
 }
+void tempAlarm() {
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET); //green light
+	Delay(500);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET); //turn off greenlight
+	
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET); //orange light
+	Delay(500);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET); //turn off organge 
+	
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET); //red light
+	Delay(500);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET); //turn off red light
+	
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET); //blue light
+	Delay(500);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET); //turn off  bluelight
+}
+
+void Delay(__IO uint32_t time)
+{
+  TimmingDelay = time;
+  while(TimmingDelay !=0);
+}         
 
 int main(void)
 {
@@ -349,28 +421,43 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 	ADC_Config();
+	GPIO_Config();
+	
 	
 	// Initialize ADC1 and check to make sure it happened
 	HAL_ADC_Init(&ADC1_Handle);
 	if (HAL_ADC_Init(&ADC1_Handle) != HAL_OK) Error_Handler(ADC_INIT_FAIL);
-
-
+	
 	while(1) {
-		
 		// Wait for ticks flag to be set high by SysTick
+		
+		
 		if (ticks){
-			
+//			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET); //segment 2
+//			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET); //a
+
 			// Ping ADC for reading and obtain temperature
 			temp = getTemp();
 			
 			displayTemp(temp);
 			printf("Tempertaure: %f \n",temp);
-			
 		
 			// Set global tick variable to 0 and wait for SysTick to reset flag
 			ticks = 0;
 		}
+		
+		if (){
+			if(temp >= ALARM_THRESHOLD_TEMP) {
+				tempAlarm();
+			}
+			else {
+				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+			}
 	}
+}
 	
 return NULL;
 }

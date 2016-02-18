@@ -30,24 +30,22 @@ Build target 'Lab 2'
 compiling main.c...
 Sources\global_vars.h(7): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\main.c(123): warning:  #550-D: variable "temp" was set but never used
+Sources\main.c(44): warning:  #1295-D: Deprecated declaration tempAlarm - give arg types
+  void tempAlarm();
+Sources\main.c(136): warning:  #550-D: variable "temp" was set but never used
         float VSENSE, temp;     
-Sources\main.c(143): warning:  #177-D: variable "displayValues" was declared but never referenced
-        int displayValues, digit, tempValue4, tempValue3, tempValue2, tempValue1, i;
-Sources\main.c(143): warning:  #177-D: variable "tempValue4" was declared but never referenced
-        int displayValues, digit, tempValue4, tempValue3, tempValue2, tempValue1, i;
-Sources\main.c(143): warning:  #177-D: variable "tempValue3" was declared but never referenced
-        int displayValues, digit, tempValue4, tempValue3, tempValue2, tempValue1, i;
-Sources\main.c(143): warning:  #177-D: variable "tempValue2" was declared but never referenced
-        int displayValues, digit, tempValue4, tempValue3, tempValue2, tempValue1, i;
-Sources\main.c(143): warning:  #177-D: variable "tempValue1" was declared but never referenced
-        int displayValues, digit, tempValue4, tempValue3, tempValue2, tempValue1, i;
-Sources\main.c(375): warning:  #111-D: statement is unreachable
+Sources\main.c(160): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                if (temp >= 100.0){
+Sources\main.c(169): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                        if (temp >= 10.0){
+Sources\main.c(178): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                                        if (temp >= 1.0){
+Sources\main.c(452): warning:  #111-D: statement is unreachable
   return NULL;
-Sources\main.c: 8 warnings, 0 errors
+Sources\main.c: 7 warnings, 0 errors
 linking...
-Program Size: Code=9684 RO-data=440 RW-data=20 ZI-data=1092  
-".\Objects\Base_Project.axf" - 0 Error(s), 8 Warning(s).
+Program Size: Code=11440 RO-data=440 RW-data=24 ZI-data=1096  
+".\Objects\Base_Project.axf" - 0 Error(s), 7 Warning(s).
 
 <h2>Software Packages used:</h2>
 

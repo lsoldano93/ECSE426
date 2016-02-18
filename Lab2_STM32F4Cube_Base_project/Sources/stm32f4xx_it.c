@@ -13,7 +13,7 @@
   * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
+  * are permittedF provided that the following conditions are met:
   *   1. Redistributions of source code must retain the above copyright notice,
   *      this list of conditions and the following disclaimer.
   *   2. Redistributions in binary form must reproduce the above copyright notice,
@@ -154,10 +154,15 @@ void PendSV_Handler(void)
   * @param  None
   * @retval None
   */
+//added this statement for the delay timer
+__IO uint32_t TimmingDelay;
 void SysTick_Handler(void)
 {
+		
+		if(TimmingDelay !=0) {
+			TimmingDelay --;
+		}
 		HAL_IncTick();
-	
 		// Set flag for main.c to continue running of while loop
 		ticks = 1;
 }
