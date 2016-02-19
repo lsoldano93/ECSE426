@@ -20,10 +20,13 @@
 #define ARRAY_LENGTH 1
 #define kalmanQ 0.2
 #define kalmanR 20.1
-#define kalmanX 24.9			// Standard base room temp reading of sensor
+#define kalmanX 29.5			// Standard base room temp reading of sensor
 #define kalmanP 0.0
 #define kalmanK 0.0
 
+/** 
+  * @brief Structure for the Kalman filter  
+  */ 
 typedef struct kalman_t{
 	float q;
 	float r;
@@ -33,26 +36,86 @@ typedef struct kalman_t{
 } kalman_t;
 
 /* Private variables ---------------------------------------------------------*/
+
 ADC_HandleTypeDef ADC1_Handle;
+int timer(__IO uint32_t time);
+float tempValue;
+
+/* Public variables ----------------------------------------------------------*/
+//extern __IO uint32_t TimmingDelay;
+//extern __IO uint32_t TimerDelay;
+
+/* Private function prototypes -----------------------------------------------*/
+
+/**  Assembly Kalmann filter function
+   * @brief  Filters values to remove noisy fluctuations
+	 * @param  Input value of measurements, array to output to, length of arrays, and kalman parameter struct
+   * @retval Returns updated output array **/
+int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kalman_t* kalman);
+
+/**  ADC Configuration
+   * @brief  Configures ADC1 Channel 16 so that temperature values can be read
+   */
+void ADC_Config(void);
+
+/**  GPIO Configuration
+   * @brief  Configures GPIO pins for proper system outputs to match to physical circuit
+   */
+void GPIO_Config(void);
+
+/**  Get temperature
+   * @brief  Obtains temperature voltage readout from ADC1 Channel 16
+   * @retval Temperature float in celcius
+   */
+float getTemp(void);
+
+/**  Function to display temperature
+   * @brief  Breaks temperature into individual digits for display then calls
+   *         lightDigit function to have that digit displayed
+   * @param  Temperature to be dispalyed
+   */
+void displayTemp(float temp);
+
+/**  Light Digit
+   * @brief  Method for lighting a digit on the 7 segment display, where segment
+   *         control has already been assigned to a specific digit in the display
+   * @param  Digit to be displayed
+   */
+void lightDigit(int digit);
+
+/**  Temperature alarm function
+   * @brief  If alarm is triggered, light LEDs in sequential circular pattern
+   * @param  None
+   * @retval None
+   */
+void tempAlarm();
+
+/**  Delay
+   * @brief  Increments a timer tick to allow the use of delays
+   * @param  System clock timer value
+   * @retval None
+   */
+void Delay(__IO uint32_t time);
+
+/**  Timer
+   * @brief  Increments a timer tick to allow the use of delays
+   * @param  System clock timer value
+   * @retval None
+   */
+void SystemClock_Config(void);
+
+/* Initialize -------------------------------------------------------------------*/
+
 int ticks = 0;
 int alarmCount = 0;
 
-/* Private function prototypes -----------------------------------------------*/
-void ADC_Config(void);
-void SystemClock_Config(void);
-void GPIO_Config(void);
-float getTemp(void);
-void displayTemp(float temp);
-void lightDigit(int digit);
-int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kalman_t* kalman);
-void tempAlarm();
-void Delay(__IO uint32_t time);
-int timer(__IO uint32_t time);
-extern __IO uint32_t TimmingDelay;
-extern __IO uint32_t TimerDelay;
-float tempValue;
-/* Initialize -------------------------------------------------------------------*/
+/* Private Functions ------------------------------------------------------------*/
 
+/**  ADC Configuration
+   * @brief  Configures ADC1 Channel 16 so that temperature values can be read
+   * @param  None
+   * @retval None
+   */
 void ADC_Config(void) {
 
 
@@ -82,18 +145,21 @@ void ADC_Config(void) {
 	// Enable ADC clock
 	__ADC1_CLK_ENABLE();
 	
+	// Initialize clock with error handling
 	if (HAL_ADC_Init(&ADC1_Handle) != HAL_OK) Error_Handler(ADC_INIT_FAIL);
 	
 // Configure temperature sensor peripheral 
 	HAL_ADC_ConfigChannel(&ADC1_Handle, &ADC1_ch16);
 	HAL_ADC_Start(&ADC1_Handle);
 	
-	
-	
 }
 
 
-/** GPIO Configuration */
+/**  GPIO Configuration
+   * @brief  Configures GPIO pins for proper system outputs to match to physical circuit
+   * @param  None
+   * @retval None
+   */
 void GPIO_Config() {
 	
 	// WARNING: DO NOT USE PORT A13, PORT A14, or PORT B3
@@ -141,31 +207,34 @@ void GPIO_Config() {
 }
 
 
-/** Method for obtaining temperature */
+/**  Get temperature
+   * @brief  Obtains temperature voltage readout from ADC1 Channel 16
+   * @param  None
+   * @retval Temperature float in celcius
+   */
 float getTemp() {
 
 	float VSENSE, temp;	
 	
-	// Obtain temperature value from ADC
-	VSENSE = HAL_ADC_GetValue(&ADC1_Handle); //gets the temperature voltage value
-	//temp = HAL_ADC_GetValue(&ADC1_Handle);
+	// Obtain temperature voltage value from ADC
+	VSENSE = HAL_ADC_GetValue(&ADC1_Handle); 
 	
-	// ADC 3.3 Volts per 2^12 steps (12 bit resolution in configuration)
-	// Voltage at 25C is 760mV
-	// Avg slop is 25mV/1C
+	/* ADC 3.3 Volts per 2^12 steps (12 bit resolution in configuration)
+	   Voltage at 25C is 760mV
+	   Avg slop is 25mV/1C */
 	tempValue  = (VSENSE*(3.3f/ 4096.0f) - (float)0.76 )/(float)0.025 + 25.0;			
 
-	
-//	temperature_reading = Kalmanfilter(temperature_reading, &ks);
-	//printf("%f\n", temperature_reading);
 	return tempValue;
-	// Temperature (in °C) = {(VSENSE – V25) / AVG_SLOPE} + 25
-	//return temp = ((VSENSE - V25)/AVG_SLOPE) + 25;
 	
 }
 
 
-/** Method for determining temperature display values */
+/**  Function to display temperature
+   * @brief  Breaks temperature into individual digits for display then calls
+   *         lightDigit function to have that digit displayed
+   * @param  Temperature to be dispalyed
+   * @retval None
+   */
 void displayTemp(float temp){
 	
 	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:CCD123, 5:E, 6:CCD3, 
@@ -256,14 +325,17 @@ void displayTemp(float temp){
 		}
 		
 		Delay(1);
-		//printf("i:%d  ",i);
-		
 	}	
 	
 }
 	
 
-/** Method for lighting segment displays by number */
+/**  Light Digit
+   * @brief  Method for lighting a digit on the 7 segment display, where segment
+   *         control has already been assigned to a specific digit in the display
+   * @param  Digit to be displayed
+   * @retval None
+   */
 void lightDigit(int digit) {
 	
 	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:CCD123, 5:E, 6:CCD3, 
@@ -413,7 +485,11 @@ void lightDigit(int digit) {
 }
 
 
-/** Method for alarm lighting */
+/**  Temperature alarm function
+   * @brief  If alarm is triggered, light LEDs in sequential circular pattern
+   * @param  None
+   * @retval None
+   */
 void tempAlarm() {
 	
 	// Green light on
@@ -447,14 +523,25 @@ void tempAlarm() {
 }
 
 
-/** Method for clock delay */
+/**  Delay
+   * @brief  Increments a timer tick to allow the use of delays
+   * @param  System clock timer value
+   * @retval None
+   */
 void Delay(__IO uint32_t time)
 {
 	
   TimmingDelay = time;
   while(TimmingDelay !=0);
 	
-}         
+}     
+
+
+/**  Timer
+   * @brief  Increments a timer tick to allow the use of delays
+   * @param  System clock timer value
+   * @retval None
+   */
 int timer(__IO uint32_t time) {
 	TimerDelay = time;
 
@@ -462,7 +549,14 @@ int timer(__IO uint32_t time) {
 	return 1;
 }
 
-/** Main method */
+
+/**  Main Method
+   * @brief  Initializes the Kalman filter, calls configuration functions for
+   *         the system clock, ADC, and GPIO pins, then enters a while loop
+   *         that updates temperature + display, and checks alarm conditions
+   * @param  None
+   * @retval None
+   */
 int main(void)
 {
 	
@@ -536,7 +630,11 @@ return NULL;
 }
 
 
-/** System Clock Configuration */
+/**  System Clock Configuration
+   * @brief  Configures the system clock for proper operation
+   * @param  None
+   * @retval None
+   */
 void SystemClock_Config(void){
 
   RCC_OscInitTypeDef RCC_OscInitStruct;

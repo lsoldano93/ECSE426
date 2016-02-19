@@ -2076,9 +2076,9 @@ Image Symbol Table
     APBAHBPrescTable                         0x08002e30   Data          16  stm32f4xx_hal_rcc.o(.constdata)
     Region$$Table$$Base                      0x08002e40   Number         0  anon$$obj.o(Region$$Table)
     Region$$Table$$Limit                     0x08002e60   Number         0  anon$$obj.o(Region$$Table)
-    ticks                                    0x20000000   Data           4  main.o(.data)
-    alarmCount                               0x20000004   Data           4  main.o(.data)
-    tempValue                                0x20000008   Data           4  main.o(.data)
+    tempValue                                0x20000000   Data           4  main.o(.data)
+    ticks                                    0x20000004   Data           4  main.o(.data)
+    alarmCount                               0x20000008   Data           4  main.o(.data)
     TimmingDelay                             0x2000000c   Data           4  stm32f4xx_it.o(.data)
     TimerDelay                               0x20000010   Data           4  stm32f4xx_it.o(.data)
     SystemCoreClock                          0x20000018   Data           4  system_stm32f4xx.o(.data)
@@ -2222,7 +2222,7 @@ Image component sizes
 
         56          4          0          0          0      27323   fput_debug.o
        134          0          0          0          0        292   kalmanfilter_asm.o
-      2764        226          0         12         68     352019   main.o
+      2764        226          0         12         68     351929   main.o
         36          8        392          0       1024        856   startup_stm32f407xx.o
        134         16          0          4          0       4396   stm32f4xx_hal.o
       1070         56          0          0          0       4804   stm32f4xx_hal_adc.o
@@ -2234,7 +2234,7 @@ Image component sizes
        100         18          0          4          0       1229   system_stm32f4xx.o
 
     ----------------------------------------------------------------------
-      7604        778        440         28       1096     434884   Object Totals
+      7604        778        440         28       1096     434794   Object Totals
          0          0         32          0          0          0   (incl. Generated)
         10          0          0          0          4          0   (incl. Padding)
 
@@ -2291,8 +2291,8 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     11432        884        440         32       1096     432172   Grand Totals
-     11432        884        440         32       1096     432172   ELF Image Totals
+     11432        884        440         32       1096     432082   Grand Totals
+     11432        884        440         32       1096     432082   ELF Image Totals
      11432        884        440         32          0          0   ROM Totals
 
 ==============================================================================
