@@ -30,20 +30,22 @@ Build target 'Lab 2'
 compiling main.c...
 Sources\global_vars.h(8): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\main.c(50): warning:  #1295-D: Deprecated declaration tempAlarm - give arg types
+Sources\main.c(48): warning:  #1295-D: Deprecated declaration tempAlarm - give arg types
   void tempAlarm();
-Sources\main.c(147): warning:  #550-D: variable "temp" was set but never used
+Sources\main.c(156): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        tempValue  = (VSENSE*(3.3f/ 4096.0f) - (float)0.76 )/(float)0.025 + 25.0;                       
+Sources\main.c(147): warning:  #177-D: variable "temp" was declared but never referenced
         float VSENSE, temp;     
-Sources\main.c(176): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+Sources\main.c(183): warning:  #1035-D: single-precision operand implicitly converted to double-precision
         if (temp >= 100.0){
-Sources\main.c(187): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+Sources\main.c(194): warning:  #1035-D: single-precision operand implicitly converted to double-precision
                 if (temp >= 10.0){
-Sources\main.c(531): warning:  #111-D: statement is unreachable
+Sources\main.c(534): warning:  #111-D: statement is unreachable
   return NULL;
-Sources\main.c: 6 warnings, 0 errors
+Sources\main.c: 7 warnings, 0 errors
 linking...
-Program Size: Code=11640 RO-data=440 RW-data=32 ZI-data=1096  
-".\Objects\Base_Project.axf" - 0 Error(s), 6 Warning(s).
+Program Size: Code=11432 RO-data=440 RW-data=32 ZI-data=1096  
+".\Objects\Base_Project.axf" - 0 Error(s), 7 Warning(s).
 
 <h2>Software Packages used:</h2>
 

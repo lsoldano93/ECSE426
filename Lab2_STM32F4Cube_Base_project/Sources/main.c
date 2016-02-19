@@ -16,11 +16,10 @@
 #include "supporting_functions.h"
 #include "global_vars.h"
 
-#define AVG_SLOPE (125 + 40) / ((3.6 - 1.8) * 1000)
-#define ALARM_THRESHOLD_TEMP 20
+#define ALARM_THRESHOLD_TEMP 35
 #define ARRAY_LENGTH 1
-#define kalmanQ 0.1
-#define kalmanR 0.1
+#define kalmanQ 0.2
+#define kalmanR 20.1
 #define kalmanX 24.9			// Standard base room temp reading of sensor
 #define kalmanP 0.0
 #define kalmanK 0.0
@@ -35,7 +34,6 @@ typedef struct kalman_t{
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef ADC1_Handle;
-float	V25 = AVG_SLOPE * 25;
 int ticks = 0;
 int alarmCount = 0;
 
@@ -52,45 +50,45 @@ void Delay(__IO uint32_t time);
 int timer(__IO uint32_t time);
 extern __IO uint32_t TimmingDelay;
 extern __IO uint32_t TimerDelay;
+float tempValue;
 /* Initialize -------------------------------------------------------------------*/
 
-/** ADC Configuration */
 void ADC_Config(void) {
 
-	ADC_InitTypeDef ADC1_itd;
+
 	ADC_ChannelConfTypeDef ADC1_ch16;
-	
-	// Enable ADC clock
-	__HAL_RCC_ADC1_CLK_ENABLE();
-	
-	// Initialize values for ADC1 init type def
-	ADC1_itd.Resolution = ADC_RESOLUTION_12B;    									// 12 bit resolution      
-	ADC1_itd.DataAlign = ADC_DATAALIGN_RIGHT;         						// Data alligns to right
-	ADC1_itd.ScanConvMode = DISABLE;           
-	ADC1_itd.EOCSelection = ADC_EOC_SINGLE_CONV;           				// Single conversion mode
-	ADC1_itd.ContinuousConvMode = DISABLE;     
-	ADC1_itd.DMAContinuousRequests = ADC_DMAACCESSMODE_DISABLED;  
-	ADC1_itd.NbrOfConversion = 1;       													// Single conversion per call
-	ADC1_itd.DiscontinuousConvMode = DISABLE;  
-	ADC1_itd.NbrOfDiscConversion = 0;    
-	
-	// ***Check these two last values, not sure if they are right***
-	ADC1_itd.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T8_CC1;       
-	ADC1_itd.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;  
 	
 	// Initialize values for ADC1 handle type def
 	ADC1_Handle.Instance = ADC1;
-	ADC1_Handle.Init = ADC1_itd;
+	ADC1_Handle.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+	ADC1_Handle.Init.Resolution = ADC_RESOLUTION_12B;    									// 12 bit resolution      
+	ADC1_Handle.Init.DataAlign = ADC_DATAALIGN_RIGHT;         						// Data alligns to right
+	ADC1_Handle.Init.ScanConvMode = DISABLE;           
+	ADC1_Handle.Init.EOCSelection = DISABLE;           				// Single conversion mode
+	ADC1_Handle.Init.ContinuousConvMode = ENABLE;     
+	ADC1_Handle.Init.DMAContinuousRequests = DISABLE;  
+	ADC1_Handle.Init.NbrOfConversion = 1;       													// Single conversion per call
+	ADC1_Handle.Init.DiscontinuousConvMode = DISABLE;  
+	ADC1_Handle.Init.NbrOfDiscConversion = 0;    
+	ADC1_Handle.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;       
+	ADC1_Handle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;  
 	
 	// Initialize values for temperature sensor (Temperature analog channel is Ch16 of ADC1)
 	ADC1_ch16.Channel = ADC_CHANNEL_16;
 	ADC1_ch16.Rank = 1;
-
 	ADC1_ch16.SamplingTime = ADC_SAMPLETIME_480CYCLES;
 	ADC1_ch16.Offset = 0;
+		
+	// Enable ADC clock
+	__ADC1_CLK_ENABLE();
 	
-	// Configure temperature sensor peripheral 
+	if (HAL_ADC_Init(&ADC1_Handle) != HAL_OK) Error_Handler(ADC_INIT_FAIL);
+	
+// Configure temperature sensor peripheral 
 	HAL_ADC_ConfigChannel(&ADC1_Handle, &ADC1_ch16);
+	HAL_ADC_Start(&ADC1_Handle);
+	
+	
 	
 }
 
@@ -104,7 +102,7 @@ void GPIO_Config() {
 	   GPIO Pin Mapping
 		 Segment Ctrls {CCD1:PC1, CCD2:PC2, CCD3:PC4, CCD4:PC5}
 		 DP Ctrl 	     {DP:PC6}
-		 Segments      {A:PB0, B:PB1, C:PB4, D:PB11, E:PB12, F:PB13, G:PB14 
+		 Segments      {A:PB0, B:PB1, C:PB5, D:PB11, E:PB12, F:PB13, G:PB14 
 	Alarm LED : PD13
 	*/
 	
@@ -137,6 +135,8 @@ void GPIO_Config() {
 	HAL_GPIO_Init(GPIOB, &GPIO_InitB);
 	HAL_GPIO_Init(GPIOC, &GPIO_InitC);
 	HAL_GPIO_Init(GPIOD, &GPIO_InitD);
+	
+	__HAL_ADC_ENABLE(&ADC1_Handle);
 
 }
 
@@ -145,15 +145,22 @@ void GPIO_Config() {
 float getTemp() {
 
 	float VSENSE, temp;	
-	HAL_ADC_Start(&ADC1_Handle);	
-
-	// Obtain temperature value from ADC
-	VSENSE = HAL_ADC_PollForConversion(&ADC1_Handle, 200);
-	HAL_ADC_GetValue(&ADC1_Handle); //gets the temperature voltage value
-	HAL_ADC_Stop(&ADC1_Handle);
 	
+	// Obtain temperature value from ADC
+	VSENSE = HAL_ADC_GetValue(&ADC1_Handle); //gets the temperature voltage value
+	//temp = HAL_ADC_GetValue(&ADC1_Handle);
+	
+	// ADC 3.3 Volts per 2^12 steps (12 bit resolution in configuration)
+	// Voltage at 25C is 760mV
+	// Avg slop is 25mV/1C
+	tempValue  = (VSENSE*(3.3f/ 4096.0f) - (float)0.76 )/(float)0.025 + 25.0;			
+
+	
+//	temperature_reading = Kalmanfilter(temperature_reading, &ks);
+	//printf("%f\n", temperature_reading);
+	return tempValue;
 	// Temperature (in °C) = {(VSENSE – V25) / AVG_SLOPE} + 25
-	return temp = ((VSENSE - V25)/AVG_SLOPE) + 25;
+	//return temp = ((VSENSE - V25)/AVG_SLOPE) + 25;
 	
 }
 
@@ -166,7 +173,7 @@ void displayTemp(float temp){
 	   GPIO Pin Mapping
 	   Segment Ctrls {CCD1:PC1, CCD2:PC2, CCD3:PC4, CCD4:PC5}
 		 DP Ctrl 	     {DP:PC6}
-		 Segments      {A:PB0, B:PB1, C:PB4, D:PB11, E:PB12, F:PB13, G:PB14 */
+		 Segments      {A:PB0, B:PB1, C:PB5, D:PB11, E:PB12, F:PB13, G:PB14 */
 	
 	int displayValues, i;
 	int tempValue[4];
@@ -248,7 +255,7 @@ void displayTemp(float temp){
 			
 		}
 		
-		Delay(5);
+		Delay(1);
 		//printf("i:%d  ",i);
 		
 	}	
@@ -264,7 +271,7 @@ void lightDigit(int digit) {
 	   GPIO Pin Mapping
 	   Segment Ctrls {CCD1:PC1, CCD2:PC2, CCD3:PC4, CCD4:PC5}
 		 DP Ctrl 	     {DP:PC6}
-		 Segments      {A:PB0, B:PB1, C:PB4, D:PB11, E:PB12, F:PB13, G:PB14 */
+		 Segments      {A:PB0, B:PB1, C:PB5, D:PB11, E:PB12, F:PB13, G:PB14 */
 	
 	switch(digit) {
 			case 0:
@@ -483,10 +490,6 @@ int main(void)
   SystemClock_Config();
 	ADC_Config();
 	GPIO_Config();
-	
-	// Initialize ADC1 and check to make sure it happened
-	HAL_ADC_Init(&ADC1_Handle);
-	if (HAL_ADC_Init(&ADC1_Handle) != HAL_OK) Error_Handler(ADC_INIT_FAIL);
 
 	while(1) {
 		
