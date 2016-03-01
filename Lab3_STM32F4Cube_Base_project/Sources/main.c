@@ -12,11 +12,55 @@
 #include "stm32f4xx_hal.h"
 #include "supporting_functions.h"
 #include "lis3dsh.h"
+#include "sys_config.h"
+#include "accelerometer.h"
+#include "7_segment.h"
 
 /* Private variables ---------------------------------------------------------*/
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config	(void);
+
+//array of size 3 that contains the accelerometer output
+float accelerometer_out[3];
+
+//interupt for accelerometer
+uint8_t ready_to_update_accelerometer;
+
+/*
+	* 
+  * @brief Structure for the Kalman filter  
+*/ 
+
+typedef struct kalman_t{
+	float q;
+	float r;
+	float x;
+	float p;
+	float k;
+} kalman_t;
+
+
+/**  Assembly Kalmann filter function
+   * @brief  Filters values to remove noisy fluctuations
+	 * @param  Input value of measurements, array to output to, length of arrays, and kalman parameter struct
+   * @retval Returns updated output array **/
+int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kalman_t* kalman);
+
+
+void EXTI0_IRQHandler(void){
+	
+	  /* EXTI line interrupt detected */
+  if(__HAL_GPIO_EXTI_GET_IT(EXTI0_IRQn) != RESET) {
+    __HAL_GPIO_EXTI_CLEAR_IT(EXTI0_IRQn);
+    HAL_GPIO_EXTI_Callback(EXTI0_IRQn); //might need this might not
+		//void LIS3DSH_ReadACC(float* out);
+		LIS3DSH_ReadACC(accelerometer_out);
+		ready_to_update_accelerometer = 1;
+  }
+
+}
+
 
 int main(void)
 {	
@@ -28,9 +72,29 @@ int main(void)
   SystemClock_Config();
 	
   /* Initialize all configured peripherals */
+	
+	init_interrupts(); //initialize accelerometer interrupt
+	init_accelerometer(); //initialize accelerometer 
+	
+	ready_to_update_accelerometer = 0; //set accelerometer initally to 0
 
+	//run when interrupt received
 	while (1){
+		
+		if(ready_to_update_accelerometer == 1) {
+			
+			//reset interrupt
+			ready_to_update_accelerometer = 0;
+			
+			//update real accelerometer values
+			update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
+			
+			printf("Tilt: %f, Rotation: %f\n", fabs(calc_pitch_angle()), fabs(calc_roll_angle()));
+			
+		}
 	}
+	
+	return 0;
 }
 
 /** System Clock Configuration*/
