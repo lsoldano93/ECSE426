@@ -40,8 +40,8 @@ void displayValue(float val) {
 			default:
 				break;
 		} 
+	}
 }
-	
 void lightDigit(int digit) {
 	
 	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:CCD123, 5:E, 6:CCD3, 

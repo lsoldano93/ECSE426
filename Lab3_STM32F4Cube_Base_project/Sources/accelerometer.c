@@ -27,37 +27,6 @@ typedef struct {
 
 accelerometer_values accel;
 
-//this function initialize the interrupts for the accelerometer
-void init_interrupts() {
-	
-	// Set GPIO pin PE0 as interrupt input for acceleromter data 
-	// set PE0 as the interupt for the accelorometer
-	GPIO_InitTypeDef GPIO_InitE;
-	
-	// Enable clocks for ports E
-	__HAL_RCC_GPIOE_CLK_ENABLE();
-
-	// Give initialization values for GPIO E pin sets
-	GPIO_InitE.Pin = GPIO_PIN_0 ;
-	GPIO_InitE.Mode = GPIO_MODE_IT_RISING; //pin needs to be set in interrupt mode, not sure if to use rising/falling edge
-	GPIO_InitE.Pull = GPIO_PULLDOWN;
-	GPIO_InitE.Speed =  GPIO_SPEED_FREQ_VERY_HIGH;
-	
-	// Initialize GPIO PE0
-	HAL_GPIO_Init(GPIOE, &GPIO_InitE);	
-	
-	//enable external interrupt line 0
-	//SYSCFG_EXTICR1_EXTI0_PE is pin PE0
-	HAL_GPIO_EXTI_IRQHandler(SYSCFG_EXTICR1_EXTI0_PE);
-	
-	// set up NVIC
-	// PE0 is connected to EXTI_Line0, which has EXTI0_IRQn vector 
-	HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_0); //not sure if we need this one
-	HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0); //set group and sub priority
-	HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-
-}
-
 //takes in the raw inputs and outputs a more exact value
 void update_accel_values(float Ax, float Ay, float Az) {
 	accel.x = Ax*ACC11 + Ay*ACC12 + Az*ACC13 + ACC10;
@@ -81,13 +50,17 @@ float calc_yaw_angle(void){
 void init_accelerometer() {
 	//Configure LIS3DSH accelermoter sensor
 	LIS3DSH_InitTypeDef init;
+	uint8_t data_ready;
 	
 	init.Power_Mode_Output_DataRate = LIS3DSH_DATARATE_100; //active mode with data rate 100HZ
 	init.Axes_Enable = LIS3DSH_XYZ_ENABLE; //enable all axes
-	init.Continous_Update = LIS3DSH_ContinousUpdate_Disabled; //disable continuous update
+	init.Continous_Update = LIS3DSH_ContinousUpdate_Enabled; //enable continuous update
 	init.AA_Filter_BW = LIS3DSH_AA_BW_50; //not sure about this one, BW = ODR/2
 	init.Full_Scale = LIS3DSH_FULLSCALE_2; //use full scale range of 2g
 	init.Self_Test = LIS3DSH_SELFTEST_NORMAL; //keep this set to normal
 	LIS3DSH_Init(&init);
 	
+	//Configuer Interrupts
+	data_ready = 4;
+	LIS3DSH_Write(&data_ready, LIS3DSH_CTRL_REG4, 1);
 }

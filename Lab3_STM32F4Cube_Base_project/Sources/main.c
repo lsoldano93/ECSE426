@@ -48,19 +48,49 @@ typedef struct kalman_t{
 int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kalman_t* kalman);
 
 
+//this function initialize the interrupts for the accelerometer
+void init_interrupts() {
+	
+	// Set GPIO pin PE0 as interrupt input for acceleromter data 
+	// set PE0 as the interupt for the accelorometer
+	GPIO_InitTypeDef GPIO_InitE;
+	
+	// Enable clocks for ports E
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+
+	// Give initialization values for GPIO E pin sets
+	GPIO_InitE.Pin = GPIO_PIN_0 ;
+	GPIO_InitE.Mode = GPIO_MODE_IT_RISING; //pin needs to be set in interrupt mode, not sure if to use rising/falling edge
+	GPIO_InitE.Pull = GPIO_PULLDOWN;
+	GPIO_InitE.Speed =  GPIO_SPEED_FREQ_VERY_HIGH;
+	
+	// Initialize GPIO PE0
+	HAL_GPIO_Init(GPIOE, &GPIO_InitE);	
+	
+	//enable external interrupt line 0
+	//SYSCFG_EXTICR1_EXTI0_PE is pin PE0
+	HAL_GPIO_EXTI_IRQHandler(SYSCFG_EXTICR1_EXTI0_PE);
+	
+	// set up NVIC
+	// PE0 is connected to EXTI_Line0, which has EXTI0_IRQn vector 
+	//HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_0); //not sure if we need this one
+	HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0); //set group and sub priority
+	HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
+}
+
 void EXTI0_IRQHandler(void){
 	
-	  /* EXTI line interrupt detected */
+	/* EXTI line interrupt detected */
   if(__HAL_GPIO_EXTI_GET_IT(EXTI0_IRQn) != RESET) {
-    __HAL_GPIO_EXTI_CLEAR_IT(EXTI0_IRQn);
-    HAL_GPIO_EXTI_Callback(EXTI0_IRQn); //might need this might not
-		//void LIS3DSH_ReadACC(float* out);
+
+		__HAL_GPIO_EXTI_CLEAR_IT(EXTI0_IRQn);
 		LIS3DSH_ReadACC(accelerometer_out);
+
 		ready_to_update_accelerometer = 1;
   }
 
 }
-
 
 int main(void)
 {	
@@ -74,24 +104,28 @@ int main(void)
   /* Initialize all configured peripherals */
 	
 	init_interrupts(); //initialize accelerometer interrupt
-	init_accelerometer(); //initialize accelerometer 
+	init_accelerometer(); //initialize accelerometer
+	__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI0_IRQn); //create software interrupt
 	
 	ready_to_update_accelerometer = 0; //set accelerometer initally to 0
 
+	printf("Start");
 	//run when interrupt received
 	while (1){
 		
 		if(ready_to_update_accelerometer == 1) {
 			
 			//reset interrupt
+			printf("flag set\n");
 			ready_to_update_accelerometer = 0;
 			
 			//update real accelerometer values
-			update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
+			//update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
 			
-			printf("Tilt: %f, Rotation: %f\n", fabs(calc_pitch_angle()), fabs(calc_roll_angle()));
+			//printf("Tilt: %f, Rotation: %f\n", fabs(calc_pitch_angle()), fabs(calc_roll_angle()));
 			
 		}
+		
 	}
 	
 	return 0;

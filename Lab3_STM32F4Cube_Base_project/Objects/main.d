@@ -47,3 +47,4 @@
 .\objects\main.o: Sources\sys_config.h
 .\objects\main.o: Sources\accelerometer.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\main.o: Sources\7_segment.h

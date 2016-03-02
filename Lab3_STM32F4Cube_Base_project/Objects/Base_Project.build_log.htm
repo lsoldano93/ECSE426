@@ -26,121 +26,24 @@ Project File Date:  03/01/2016
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.05 update 2 (build 169)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
-Rebuild target 'Lab 3'
+Build target 'Lab 3'
 compiling main.c...
-Sources\sys_config.h(8): warning:  #1-D: last line of file ends without a newline
+Sources\sys_config.h(6): warning:  #1295-D: Deprecated declaration GPIO_Config - give arg types
+  void GPIO_Config();
+Sources\sys_config.h(9): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\accelerometer.h(10): warning:  #1-D: last line of file ends without a newline
+Sources\accelerometer.h(15): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\main.c: 2 warnings, 0 errors
-compiling fput_debug.c...
-compiling supporting_functions.c...
-compiling stm32f4xx_it.c...
-compiling accelerometer.c...
-Sources\accelerometer.h(10): warning:  #1-D: last line of file ends without a newline
+Sources\7_segment.h(1): warning:  #40-D: expected an identifier
+  #ifndef 7_SEGMENT_H
+Sources\7_segment.h(9): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\accelerometer.c(18): error:  #268: declaration may not appear after executable statement in block
-        uint8_t data_ready = 4;
-Sources\accelerometer.c(19): warning:  #223-D: function "LIS302DL_Write" declared implicitly
-        LIS302DL_Write(&data_ready, LIS302DL_CTRL_REG3_ADDR, 1);
-Sources\accelerometer.c(19): error:  #20: identifier "LIS302DL_CTRL_REG3_ADDR" is undefined
-        LIS302DL_Write(&data_ready, LIS302DL_CTRL_REG3_ADDR, 1);
-Sources\accelerometer.c(22): warning:  #223-D: function "memset" declared implicitly
-        memset(&Ax1_moving_average, 0, sizeof(Ax1_moving_average));
-Sources\accelerometer.c(22): error:  #20: identifier "Ax1_moving_average" is undefined
-        memset(&Ax1_moving_average, 0, sizeof(Ax1_moving_average));
-Sources\accelerometer.c(23): error:  #20: identifier "Ay1_moving_average" is undefined
-        memset(&Ay1_moving_average, 0, sizeof(Ay1_moving_average));
-Sources\accelerometer.c(24): error:  #20: identifier "Az1_moving_average" is undefined
-        memset(&Az1_moving_average, 0, sizeof(Az1_moving_average));
-Sources\accelerometer.c(29): warning:  #1-D: last line of file ends without a newline
-  }
-Sources\accelerometer.c: 4 warnings, 5 errors
-compiling config.c...
-Sources\sys_config.h(8): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\config.c(5): warning:  #223-D: function "RCC_AHB1PeriphClockCmd" declared implicitly
-        RCC_AHB1PeriphClockCmd(peripheral_clock, ENABLE); //Enable the clock for that bank of GPIOs
-Sources\config.c(7): error:  #268: declaration may not appear after executable statement in block
-        GPIO_InitTypeDef init;
-Sources\config.c(8): error:  #136: struct "<unnamed>" has no field "GPIO_Pin"
-        init.GPIO_Pin = pin;
-Sources\config.c(10): error:  #136: struct "<unnamed>" has no field "GPIO_Mode"
-                init.GPIO_Mode = GPIO_Mode_IN; 
-Sources\config.c(10): error:  #20: identifier "GPIO_Mode_IN" is undefined
-                init.GPIO_Mode = GPIO_Mode_IN; 
-Sources\config.c(13): error:  #136: struct "<unnamed>" has no field "GPIO_Mode"
-                init.GPIO_Mode = GPIO_Mode_OUT;
-Sources\config.c(13): error:  #20: identifier "GPIO_Mode_OUT" is undefined
-                init.GPIO_Mode = GPIO_Mode_OUT;
-Sources\config.c(14): error:  #136: struct "<unnamed>" has no field "GPIO_Speed"
-                init.GPIO_Speed = GPIO_Speed_100MHz;
-Sources\config.c(14): error:  #20: identifier "GPIO_Speed_100MHz" is undefined
-                init.GPIO_Speed = GPIO_Speed_100MHz;
-Sources\config.c(15): error:  #136: struct "<unnamed>" has no field "GPIO_OType"
-                init.GPIO_OType = GPIO_OType_PP;
-Sources\config.c(15): error:  #20: identifier "GPIO_OType_PP" is undefined
-                init.GPIO_OType = GPIO_OType_PP;
-Sources\config.c(17): error:  #136: struct "<unnamed>" has no field "GPIO_PuPd"
-        if(is_pullup)init.GPIO_PuPd = GPIO_PuPd_UP;
-Sources\config.c(17): error:  #20: identifier "GPIO_PuPd_UP" is undefined
-        if(is_pullup)init.GPIO_PuPd = GPIO_PuPd_UP;
-Sources\config.c(18): error:  #136: struct "<unnamed>" has no field "GPIO_PuPd"
-        else init.GPIO_PuPd = GPIO_PuPd_NOPULL;
-Sources\config.c(18): error:  #20: identifier "GPIO_PuPd_NOPULL" is undefined
-        else init.GPIO_PuPd = GPIO_PuPd_NOPULL;
-Sources\config.c(19): warning:  #223-D: function "GPIO_Init" declared implicitly
-        GPIO_Init(peripheral, &init); 
-Sources\config.c(22): error:  #247: function "GPIO_Config" has already been defined
-  void GPIO_Config() {
-Sources\config.c(66): error:  #20: identifier "GPIO_InitE" is undefined
-        GPIO_InitE.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 ;
-Sources\config.c: 3 warnings, 16 errors
-compiling LIS3DSH.c...
-Accelerometer\src\LIS3DSH.c(369): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_2G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(379): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_4G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(389): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_6G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(399): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_8G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(409): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_16G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c: 5 warnings, 0 errors
-compiling stm32f4xx_hal.c...
-compiling stm32f4xx_hal_adc.c...
-compiling stm32f4xx_hal_adc_ex.c...
-compiling stm32f4xx_hal_cortex.c...
-compiling stm32f4xx_hal_dma.c...
-compiling stm32f4xx_hal_dma_ex.c...
-compiling stm32f4xx_hal_flash.c...
-compiling stm32f4xx_hal_flash_ex.c...
-compiling stm32f4xx_hal_gpio.c...
-compiling stm32f4xx_hal_i2c.c...
-compiling stm32f4xx_hal_i2s.c...
-compiling stm32f4xx_hal_i2s_ex.c...
-compiling stm32f4xx_hal_pwr.c...
-compiling stm32f4xx_hal_pwr_ex.c...
-compiling stm32f4xx_hal_rcc.c...
-compiling stm32f4xx_hal_rcc_ex.c...
-compiling stm32f4xx_hal_rtc.c...
-compiling stm32f4xx_hal_rtc_ex.c...
-compiling stm32f4xx_hal_spi.c...
-compiling stm32f4xx_hal_sram.c...
-compiling stm32f4xx_hal_tim.c...
-compiling stm32f4xx_hal_tim_ex.c...
-compiling stm32f4xx_hal_uart.c...
-compiling stm32f4xx_hal_usart.c...
-compiling stm32f4xx_ll_fsmc.c...
-assembling startup_stm32f407xx.s...
-compiling system_stm32f4xx.c...
-".\Objects\Base_Project.axf" - 21 Error(s), 14 Warning(s).
+Sources\main.c(131): warning:  #111-D: statement is unreachable
+        return 0;
+Sources\main.c: 6 warnings, 0 errors
+linking...
+Program Size: Code=6432 RO-data=440 RW-data=20 ZI-data=1124  
+".\Objects\Base_Project.axf" - 0 Error(s), 6 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -265,7 +168,6 @@ Package Vendor: Keil
 
    * Component: Keil::Device:STM32Cube HAL:USART:1.4.2
       Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_usart.c
-Target not created.
 </pre>
 </body>
 </html>
