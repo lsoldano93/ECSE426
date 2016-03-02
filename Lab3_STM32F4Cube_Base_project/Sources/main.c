@@ -57,6 +57,7 @@ void init_interrupts() {
 	
 	// Enable clocks for ports E
 	__HAL_RCC_GPIOE_CLK_ENABLE();
+	_HAL_RCC_SYSCFIG_CLK_ENABLE();
 
 	// Give initialization values for GPIO E pin sets
 	GPIO_InitE.Pin = GPIO_PIN_0 ;
