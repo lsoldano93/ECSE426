@@ -4,7 +4,7 @@
 
 void selectDigit(int digit) {
 	
-	switch(i) {
+	switch(digit) {
 		case 4:
 			// Enable changes for first digit display
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);   // Digit 1

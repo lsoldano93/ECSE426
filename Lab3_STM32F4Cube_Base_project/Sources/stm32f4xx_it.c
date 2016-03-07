@@ -40,6 +40,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
+#include "global_vars.h"
+
+//uint8_t ready_to_update_accelerometer;
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
@@ -165,13 +168,19 @@ void SysTick_Handler(void)
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
 /**
-  * @brief  This function handles PPP interrupt request.
+  * @brief  This function handles accelerometer interrupt requests
   * @param  None
   * @retval None
   */
-/*void PPP_IRQHandler(void)
-{
-}*/
+
+uint8_t ready_to_update_accelerometer;
+void EXTI0_IRQHandler(void){
+	//LISTEN to PIN 0
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+	//Flag for interrupt
+	ready_to_update_accelerometer = 1;
+
+}
 
 /**
   * @}

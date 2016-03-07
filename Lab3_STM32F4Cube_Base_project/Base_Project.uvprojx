@@ -525,6 +525,26 @@
               <FileType>5</FileType>
               <FilePath>.\Sources\7_segment.h</FilePath>
             </File>
+            <File>
+              <FileName>keypad.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\keypad.h</FilePath>
+            </File>
+            <File>
+              <FileName>keypad.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\keypad.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\gpio_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\gpio_config.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
