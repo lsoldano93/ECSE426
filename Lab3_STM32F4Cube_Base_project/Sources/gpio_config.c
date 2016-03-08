@@ -1,7 +1,7 @@
-#include "gpio_config.h"
+#include "7seg_gpio_config.h"
 
 
-void gpio_init() {
+void 7seg_gpio_init() {
 	
 	// WARNING: DO NOT USE PORT A13, PORT A14, or PORT B3
 	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:CCD123, 5:E, 6:CCD3, 
@@ -17,12 +17,11 @@ void gpio_init() {
 	Alarm LED : PD13
 	*/
 	
-	GPIO_InitTypeDef GPIO_InitB, GPIO_InitC, GPIO_InitD;
+	GPIO_InitTypeDef GPIO_InitB, GPIO_InitC;
 	
 	// Enable clocks for ports B & C & D
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOD_CLK_ENABLE();
 	
 	// Give initialization values for GPIO B pin sets
 	GPIO_InitB.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_5 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14;
@@ -41,17 +40,11 @@ void gpio_init() {
 	/* might need to initialize them separately*/
 
 
-	// Give initialization values for GPIO D pin sets
-	GPIO_InitD.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11;
-	
-	GPIO_InitD.Mode = GPIO_MODE_IT_RISING;
-	GPIO_InitD.Pull = GPIO_PULLDOWN;
-	GPIO_InitD.Speed =  GPIO_SPEED_FREQ_HIGH;
+
 	
 	// Initialize all GPIO pin sets
 	HAL_GPIO_Init(GPIOB, &GPIO_InitB);
 	HAL_GPIO_Init(GPIOC, &GPIO_InitC);
-	HAL_GPIO_Init(GPIOD, &GPIO_InitD);
 	
 
 }

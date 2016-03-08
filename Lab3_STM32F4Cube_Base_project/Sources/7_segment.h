@@ -3,7 +3,8 @@
 
 #include "stm32f4xx_hal_gpio.h"
 
-void displayValue(float val);
-void lightDigit(int digit);
-	
+void display_init(void);
+void selectDigit(int digit);
+void lightNum(int num);
+
 #endif

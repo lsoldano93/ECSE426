@@ -158,7 +158,7 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-	HAL_IncTick();
+		HAL_IncTick();	
 }
 
 /******************************************************************************/
@@ -167,17 +167,19 @@ void SysTick_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
+
 /**
   * @brief  This function handles accelerometer interrupt requests
   * @param  None
   * @retval None
   */
-
 uint8_t ready_to_update_accelerometer;
 void EXTI0_IRQHandler(void){
-	//LISTEN to PIN 0
+	
+	// Listen to pin 0
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
-	//Flag for interrupt
+	
+	// Flag for interrupt
 	ready_to_update_accelerometer = 1;
 
 }
@@ -185,6 +187,17 @@ void EXTI0_IRQHandler(void){
 /**
   * @}
   */ 
+uint8_t tim3_tick;
+void HAL_TIM3_IRQHandler(void){
+	
+	// Call interrupt handler for timer 3
+	HAL_TIM_IRQHandler(&handle_tim3);
+	
+	// Set flag for timer tick
+	tim3_tick = 1;
+	
+}
+
 
 /**
   * @}

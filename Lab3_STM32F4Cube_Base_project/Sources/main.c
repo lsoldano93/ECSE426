@@ -16,11 +16,11 @@
 #include "accelerometer.h"
 #include "7_segment.h"
 #include "global_vars.h"
-#include "gpio_config.h"
 #include "keypad.h"
 
 
 /* Private variables ---------------------------------------------------------*/
+int ticks = 0;
 
 //array of size 3 that contains the accelerometer output
 float accelerometer_out[3];
@@ -51,27 +51,28 @@ int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kal
 
 void init_TIM3(void) {
 	TIM_Base_InitTypeDef init_TIM;
-	TIM_HandleTypeDef handle_tim;
-	// Clock Rate = ClockFrequency / (prescaler * period)
+	
+	// Desired Rate = ClockFrequency / (prescaler * period)
+	// Rate = 1000Hz, frequency = 42MHz 
 	// need to setup period and prescaler
-	init_TIM.Period = 100;
-	init_TIM.Prescaler = 100;
+	init_TIM.Period = 14000000;
+	init_TIM.Prescaler = 3000;
 	init_TIM.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	init_TIM.CounterMode = TIM_COUNTERMODE_UP;
 	
-	handle_tim.Instance = TIM3;
-	handle_tim.Init = TIM_TimeBaseStructure;
-	handle_tim.Channel = HAL_TIM_ACTIVE_CHANNEL_CLEARED;
-	handle_tim.Lock = HAL_UNLOCKED;
-	handle_tim.State = HAL_TIM_STATE_READY;
+	handle_tim3.Instance = TIM3;
+	handle_tim3.Init = init_TIM;
+	handle_tim3.Channel = HAL_TIM_ACTIVE_CHANNEL_CLEARED;
+	handle_tim3.Lock = HAL_UNLOCKED;
+	handle_tim3.State = HAL_TIM_STATE_READY;
 
-	HAL_TIM_Base_MspInit(&handle_tim);
+	HAL_TIM_Base_MspInit(&handle_tim3);
 	
 	// enable clock for TIM3 
 	__TIM3_CLK_ENABLE();
 	
-	HAL_TIM_Base_Init(&handle_tim);
-	HAL_TIM_Base_Start_IT(&handle_tim);
+	HAL_TIM_Base_Init(&handle_tim3);
+	HAL_TIM_Base_Start_IT(&handle_tim3);
 		
 	/* Configure NVIC */
 	HAL_NVIC_EnableIRQ(TIM3_IRQn);
@@ -91,7 +92,8 @@ int main(void){
   /* Initialize all configured peripherals */
 	
 	init_accelerometer(); //initialize accelerometer
-	gpio_init();
+	display_init();
+	init_keypad();
 //	__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI0_IRQn); //create software interrupt
 	
 	ready_to_update_accelerometer = 0; //set accelerometer initally to 0
@@ -118,6 +120,25 @@ int main(void){
 	
 	return 0;
 }
+
+/**
+  * @brief  Input Capture callback in non blocking mode 
+  * @param  htim: pointer to a TIM_HandleTypeDef structure that contains
+  *                the configuration information for TIM module.
+  * @retval None
+  */
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(htim);
+  
+	// TODO: Write callback function here
+	if(htim == &handle_tim3){
+		
+	}
+	
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	
 	/* Prevent unused argument(s) compilation warning */
