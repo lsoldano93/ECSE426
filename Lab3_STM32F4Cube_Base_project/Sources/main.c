@@ -55,8 +55,9 @@ void init_TIM3(void) {
 	// Desired Rate = ClockFrequency / (prescaler * period)
 	// Rate = 1000Hz, frequency = 42MHz 
 	// need to setup period and prescaler
-	init_TIM.Period = 14000000;
-	init_TIM.Prescaler = 3000;
+	//period is in MHz
+	init_TIM.Period = 42;
+	init_TIM.Prescaler = 2000;
 	init_TIM.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	init_TIM.CounterMode = TIM_COUNTERMODE_UP;
 	
