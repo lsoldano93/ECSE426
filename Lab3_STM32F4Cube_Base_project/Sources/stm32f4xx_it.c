@@ -161,6 +161,8 @@ void SysTick_Handler(void)
 		HAL_IncTick();	
 }
 
+
+
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
@@ -188,7 +190,7 @@ void EXTI0_IRQHandler(void){
   * @}
   */ 
 uint8_t tim3_tick;
-void HAL_TIM3_IRQHandler(void){
+void HAL_TIM3_IRQHandler(void) {
 	
 	// Call interrupt handler for timer 3
 	HAL_TIM_IRQHandler(&handle_tim3);
@@ -197,7 +199,10 @@ void HAL_TIM3_IRQHandler(void){
 	tim3_tick = 1;
 	
 }
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
+	/* Prevent unused argument(s) compilation warning */
+  UNUSED(htim);
+	
   if(htim->Instance == TIM3) {
     upperBound = targetAngle + 5;
     lowerBound = targetAngle - 5;
