@@ -49,7 +49,35 @@ int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kal
 
 /* Private functions ---------------------------------------------------------*/
 
+void init_TIM3(void) {
+	TIM_Base_InitTypeDef init_TIM;
+	TIM_HandleTypeDef handle_tim;
+	// Clock Rate = ClockFrequency / (prescaler * period)
+	// need to setup period and prescaler
+	init_TIM.Period = 100;
+	init_TIM.Prescaler = 100;
+	init_TIM.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	init_TIM.CounterMode = TIM_COUNTERMODE_UP;
+	
+	handle_tim.Instance = TIM3;
+	handle_tim.Init = TIM_TimeBaseStructure;
+	handle_tim.Channel = HAL_TIM_ACTIVE_CHANNEL_CLEARED;
+	handle_tim.Lock = HAL_UNLOCKED;
+	handle_tim.State = HAL_TIM_STATE_READY;
 
+	HAL_TIM_Base_MspInit(&handle_tim);
+	
+	// enable clock for TIM3 
+	__TIM3_CLK_ENABLE();
+	
+	HAL_TIM_Base_Init(&handle_tim);
+	HAL_TIM_Base_Start_IT(&handle_tim);
+		
+	/* Configure NVIC */
+	HAL_NVIC_EnableIRQ(TIM3_IRQn);
+	HAL_NVIC_SetPriority(TIM3_IRQn, 0,0);
+	//HAL_NVIC_ClearPendingIRQ(TIM3_IRQn);
+}
 
 
 int main(void){	
