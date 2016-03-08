@@ -192,10 +192,28 @@ void HAL_TIM3_IRQHandler(void){
 	
 	// Call interrupt handler for timer 3
 	HAL_TIM_IRQHandler(&handle_tim3);
-	
+	 
 	// Set flag for timer tick
 	tim3_tick = 1;
 	
+}
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+  if(htim->Instance == TIM3) {
+    upperBound = targetAngle + 5;
+    lowerBound = targetAngle - 5;
+    //do shit in here
+
+    if(angle < lowerBound) {
+      //angle down
+    }
+    else if(angle > upperBound) {
+      //angle up
+    }
+    else {
+      //then we are in the derired range of +/-5 degrees 
+      //display angle on display
+    }
+  }
 }
 
 

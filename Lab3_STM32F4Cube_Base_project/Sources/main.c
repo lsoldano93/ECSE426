@@ -115,7 +115,7 @@ int main(void){
 			update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
 			
 			printf("Tilt: %f, Rotation: %f\n", fabs(calc_pitch_angle()), fabs(calc_roll_angle()));
-			
+			HAL_DELAY(100);
 		}
 	}
 	

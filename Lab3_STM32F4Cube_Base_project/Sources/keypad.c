@@ -63,6 +63,13 @@ int get_key(void) {
 
 // TODO: Debounce
 int handle_key_press(void) {
+
+	//if(currentKey != prevKey){
+		//insert code into here
+		//add delay
+	//}
+
+
 	int key;
 	int i = 0; 
 	int angle = 0;
