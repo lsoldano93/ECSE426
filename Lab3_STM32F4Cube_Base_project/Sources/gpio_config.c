@@ -36,6 +36,11 @@ void gpio_init() {
 	GPIO_InitC.Pull = GPIO_PULLUP;
 	GPIO_InitC.Speed =  GPIO_SPEED_FREQ_HIGH;
 	
+	/* Need to fix this part*/
+	/* set columns and rows to input active low*/
+	/* might need to initialize them separately*/
+
+
 	// Give initialization values for GPIO D pin sets
 	GPIO_InitD.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11;
 	
