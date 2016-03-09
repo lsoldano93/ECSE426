@@ -516,16 +516,6 @@
               <FilePath>.\Sources\sys_config.h</FilePath>
             </File>
             <File>
-              <FileName>7_segment.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\7_segment.c</FilePath>
-            </File>
-            <File>
-              <FileName>7_segment.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\7_segment.h</FilePath>
-            </File>
-            <File>
               <FileName>keypad.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Sources\keypad.h</FilePath>
@@ -534,6 +524,21 @@
               <FileName>keypad.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\keypad.c</FilePath>
+            </File>
+            <File>
+              <FileName>display_segment.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\display_segment.c</FilePath>
+            </File>
+            <File>
+              <FileName>display_segment.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\display_segment.h</FilePath>
+            </File>
+            <File>
+              <FileName>global_vars.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\global_vars.h</FilePath>
             </File>
           </Files>
         </Group>

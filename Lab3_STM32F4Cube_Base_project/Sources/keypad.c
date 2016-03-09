@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "keypad.h"
 
+/* Private functions ---------------------------------------------------------*/
+
 /**
    * @brief Initializes keypad for proper operation by configuring GPIO pins as input
    */
@@ -21,19 +23,56 @@ void init_keypad(void) {
 
 }
 
+
+/**
+   * @brief Reports whether or not key is still active low after DEBOUNCE_DELAY ms
+	 * @param Row and col GPIO pins associated with D-set where debounce should be checked
+   * @retval 1 if proper value read, 0 if effects due to bounce detected
+   */
+uint8_t debounce(uint16_t COL_PIN, uint16_t ROW_PIN){
+	
+	uint8_t adjustedDelay = 0;
+	
+	/* Get value of timer counter, if on back end of counter set bool to true
+		 for calculations to work properly */
+	uint16_t lastDebounceTime = tim3_ticks;
+	if (lastDebounceTime + DEBOUNCE_DELAY > TIM3_BOUND) adjustedDelay = DEBOUNCE_DELAY + lastDebounceTime - TIM3_BOUND;
+	
+	while(1) {
+		
+		if(adjustedDelay == 0){
+			// Ensure reading is still active low after set debounce time
+			if ((tim3_ticks - lastDebounceTime) > DEBOUNCE_DELAY) {
+				if (HAL_GPIO_ReadPin(GPIOD, COL_PIN) == GPIO_PIN_RESET && HAL_GPIO_ReadPin(GPIOD, ROW_PIN) == GPIO_PIN_RESET) return 1;
+				else return 0;
+			}
+		}
+		else {
+			// Ensure reading is still active low after set debounce time
+			if (tim3_ticks > DEBOUNCE_DELAY && tim3_ticks < lastDebounceTime) {
+				if (HAL_GPIO_ReadPin(GPIOD, COL_PIN) == GPIO_PIN_RESET && HAL_GPIO_ReadPin(GPIOD, ROW_PIN) == GPIO_PIN_RESET) return 1;
+				else return 0;
+			}
+		}
+		
+	}
+}
+
+
 /**
    * @brief Reports column of key that was pressed
    * @retval Int of column activated
    */
 uint8_t get_column(void) {
 	
-	// Row selection determined by active low (TODO find pins)
-	if(!HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_1)) return 0;
-	else if(!HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2)) return 1;
-	else if(!HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_6)) return 2;
+	// Row selection determined by active low 
+	if(!HAL_GPIO_ReadPin(GPIOD, col_pinmap[0])) return 0;
+	else if(!HAL_GPIO_ReadPin(GPIOD, col_pinmap[1])) return 1;
+	else if(!HAL_GPIO_ReadPin(GPIOD, col_pinmap[2])) return 2;
 	else return 9;
 	
 }
+
 
 /**
    * @brief Reports row of key that was pressed
@@ -42,14 +81,19 @@ uint8_t get_column(void) {
 uint8_t get_row(void) {
 	
 	// Row selection determined by active low (TODO find pins)
-	if(!HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_7)) return 0;
-	else if(!HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_8)) return 1;
-	else if(!HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_9)) return 2;
-	else if(!HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_10)) return 3;
+	if(!HAL_GPIO_ReadPin(GPIOD, row_pinmap[0])) return 0;
+	else if(!HAL_GPIO_ReadPin(GPIOD, row_pinmap[1])) return 1;
+	else if(!HAL_GPIO_ReadPin(GPIOD, row_pinmap[2])) return 2;
+	else if(!HAL_GPIO_ReadPin(GPIOD, row_pinmap[3])) return 3;
 	else return 9;
 
 }
 
+
+/**
+   * @brief Determines row and column of key press then returns value from map
+   * @retval Returns exact key pressed
+   */
 int get_key(void) {
 	
 	uint8_t row, column;
@@ -57,17 +101,17 @@ int get_key(void) {
 	// Interupt handling, and debouncing;
 	if((row = get_row()) == 9) return -1;
 	if((column = get_column()) == 9) return -1;
+	if(!debounce(col_pinmap[column], row_pinmap[row])) return -1;
 	
 	return keypad_map[row][column];		
 }
 
-// TODO: Debounce
-int handle_key_press(void) {
 
-	//if(currentKey != prevKey){
-		//insert code into here
-		//add delay
-	//}
+/**
+   * @brief Reports action on keypad
+   * @retval -1 if no key pressed yet, angle value if they have
+   */
+int handle_key_press(void) {
 
 
 	int key;

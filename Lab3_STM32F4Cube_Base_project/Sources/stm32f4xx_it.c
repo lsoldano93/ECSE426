@@ -200,7 +200,7 @@ void HAL_TIM3_IRQHandler(void) {
 	 
 	// Set flag for timer tick
 	tim3_ticks++;
-	if(tim3_ticks>999) tim3_ticks = 0;
+	if(tim3_ticks > TIM3_BOUND) tim3_ticks = 0;
 	
 }
 

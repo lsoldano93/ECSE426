@@ -2,12 +2,17 @@
 #define GLOBAL_VARS_H
 
 /* Public variables ----------------------------------------------------------*/
-#define TIM3_BOUND = 999;
+#define TIM3_BOUND 999
+
+// Flags
 extern uint8_t ready_to_update_accelerometer;
+extern uint16_t tim3_ticks;
+
+// Timer handler
 extern TIM_HandleTypeDef handle_tim3;
+
+// Variables
 extern float angle;
 extern float targetAngle;// = 50.0
-
-
 
 #endif
