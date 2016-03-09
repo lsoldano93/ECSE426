@@ -14,13 +14,15 @@
 #include "lis3dsh.h"
 #include "sys_config.h"
 #include "accelerometer.h"
-#include "7_segment.h"
+#include "display_segment.h"
 #include "global_vars.h"
 #include "keypad.h"
 
 
 /* Private variables ---------------------------------------------------------*/
 int ticks = 0;
+float upperBound, lowerBound;
+float targetAngle = 50.0;
 
 //array of size 3 that contains the accelerometer output
 float accelerometer_out[3];
@@ -93,7 +95,7 @@ int main(void){
   /* Initialize all configured peripherals */
 	
 	init_accelerometer(); //initialize accelerometer
-	display_init();
+	init_display();
 	init_keypad();
 //	__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI0_IRQn); //create software interrupt
 	
@@ -114,8 +116,9 @@ int main(void){
 			//update real accelerometer values
 			update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
 			
+			//use pitch
+			angle = fabs(calc_pitch_angle());
 			printf("Tilt: %f, Rotation: %f\n", fabs(calc_pitch_angle()), fabs(calc_roll_angle()));
-			HAL_DELAY(100);
 		}
 	}
 	
@@ -128,17 +131,7 @@ int main(void){
   *                the configuration information for TIM module.
   * @retval None
   */
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(htim);
-  
-	// TODO: Write callback function here
-	if(htim == &handle_tim3){
-		
-	}
-	
-}
+//
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	
@@ -150,6 +143,33 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		LIS3DSH_ReadACC(accelerometer_out);
 	}	
 }	
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
+	/* Prevent unused argument(s) compilation warning */
+  UNUSED(htim);
+	
+  if(htim->Instance == TIM3) {
+    upperBound = targetAngle + 5.0;
+    lowerBound = targetAngle - 5.0;
+    //do shit in here
+
+    if(angle < lowerBound) {
+      //angle down
+			
+			draw_d();
+    }
+    else if(angle > upperBound) {
+      //angle up
+			draw_u();
+    }
+    else {
+      //then we are in the derired range of +/-5 degrees 
+      //display user angle on display
+			draw_angle(angle);
+			
+    }
+  }
+}
 
 /** System Clock Configuration*/
 void SystemClock_Config(void){

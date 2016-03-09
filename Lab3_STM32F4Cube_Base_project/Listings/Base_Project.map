@@ -6,6 +6,13 @@ Section Cross References
 
     main.o(i.HAL_GPIO_EXTI_Callback) refers to lis3dsh.o(i.LIS3DSH_ReadACC) for LIS3DSH_ReadACC
     main.o(i.HAL_GPIO_EXTI_Callback) refers to main.o(.bss) for accelerometer_out
+    main.o(i.HAL_TIM_IC_CaptureCallback) refers to f2d.o(.text) for __aeabi_f2d
+    main.o(i.HAL_TIM_IC_CaptureCallback) refers to dadd.o(.text) for __aeabi_dadd
+    main.o(i.HAL_TIM_IC_CaptureCallback) refers to d2f.o(.text) for __aeabi_d2f
+    main.o(i.HAL_TIM_IC_CaptureCallback) refers to display_segment.o(i.draw_d) for draw_d
+    main.o(i.HAL_TIM_IC_CaptureCallback) refers to display_segment.o(i.draw_u) for draw_u
+    main.o(i.HAL_TIM_IC_CaptureCallback) refers to display_segment.o(i.draw_angle) for draw_angle
+    main.o(i.HAL_TIM_IC_CaptureCallback) refers to main.o(.data) for targetAngle
     main.o(i.SystemClock_Config) refers to stm32f4xx_hal_rcc.o(i.HAL_RCC_OscConfig) for HAL_RCC_OscConfig
     main.o(i.SystemClock_Config) refers to supporting_functions.o(i.Error_Handler) for Error_Handler
     main.o(i.SystemClock_Config) refers to stm32f4xx_hal_rcc.o(i.HAL_RCC_ClockConfig) for HAL_RCC_ClockConfig
@@ -22,20 +29,23 @@ Section Cross References
     main.o(i.main) refers to stm32f4xx_hal.o(i.HAL_Init) for HAL_Init
     main.o(i.main) refers to main.o(i.SystemClock_Config) for SystemClock_Config
     main.o(i.main) refers to accelerometer.o(i.init_accelerometer) for init_accelerometer
-    main.o(i.main) refers to 7_segment.o(i.display_init) for display_init
+    main.o(i.main) refers to display_segment.o(i.init_display) for init_display
     main.o(i.main) refers to keypad.o(i.init_keypad) for init_keypad
     main.o(i.main) refers to printfa.o(i.__0printf) for __2printf
     main.o(i.main) refers to lis3dsh.o(i.LIS3DSH_ReadACC) for LIS3DSH_ReadACC
     main.o(i.main) refers to accelerometer.o(i.update_accel_values) for update_accel_values
-    main.o(i.main) refers to accelerometer.o(i.calc_roll_angle) for calc_roll_angle
+    main.o(i.main) refers to accelerometer.o(i.calc_pitch_angle) for calc_pitch_angle
     main.o(i.main) refers to f2d.o(.text) for __aeabi_f2d
     main.o(i.main) refers to fabs.o(i.__hardfp_fabs) for __hardfp_fabs
-    main.o(i.main) refers to accelerometer.o(i.calc_pitch_angle) for calc_pitch_angle
+    main.o(i.main) refers to d2f.o(.text) for __aeabi_d2f
+    main.o(i.main) refers to accelerometer.o(i.calc_roll_angle) for calc_roll_angle
     main.o(i.main) refers to stm32f4xx_it.o(.data) for ready_to_update_accelerometer
     main.o(i.main) refers to main.o(.bss) for accelerometer_out
     supporting_functions.o(i.Error_Handler) refers to printfa.o(i.__0printf) for __2printf
     stm32f4xx_it.o(i.EXTI0_IRQHandler) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_EXTI_IRQHandler) for HAL_GPIO_EXTI_IRQHandler
     stm32f4xx_it.o(i.EXTI0_IRQHandler) refers to stm32f4xx_it.o(.data) for ready_to_update_accelerometer
+    stm32f4xx_it.o(i.HAL_TIM3_IRQHandler) refers to stm32f4xx_hal_tim.o(i.HAL_TIM_IRQHandler) for HAL_TIM_IRQHandler
+    stm32f4xx_it.o(i.HAL_TIM3_IRQHandler) refers to stm32f4xx_it.o(.data) for tim3_ticks
     stm32f4xx_it.o(i.SysTick_Handler) refers to stm32f4xx_hal.o(i.HAL_IncTick) for HAL_IncTick
     accelerometer.o(i.calc_pitch_angle) refers to f2d.o(.text) for __aeabi_f2d
     accelerometer.o(i.calc_pitch_angle) refers to sqrt.o(i.__hardfp_sqrt) for __hardfp_sqrt
@@ -65,9 +75,6 @@ Section Cross References
     accelerometer.o(i.init_accelerometer) refers to lis3dsh.o(i.LIS3DSH_DataReadyInterruptConfig) for LIS3DSH_DataReadyInterruptConfig
     accelerometer.o(i.update_accel_values) refers to accelerometer.o(.bss) for accel
     config.o(i.GPIO_Config) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_Init) for HAL_GPIO_Init
-    7_segment.o(i.display_init) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_Init) for HAL_GPIO_Init
-    7_segment.o(i.lightNum) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
-    7_segment.o(i.selectDigit) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
     keypad.o(i.get_column) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_ReadPin) for HAL_GPIO_ReadPin
     keypad.o(i.get_key) refers to keypad.o(i.get_row) for get_row
     keypad.o(i.get_key) refers to keypad.o(i.get_column) for get_column
@@ -76,6 +83,18 @@ Section Cross References
     keypad.o(i.get_row) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_ReadPin) for HAL_GPIO_ReadPin
     keypad.o(i.handle_key_press) refers to keypad.o(i.get_key) for get_key
     keypad.o(i.init_keypad) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_Init) for HAL_GPIO_Init
+    display_segment.o(i.draw_angle) refers to f2d.o(.text) for __aeabi_f2d
+    display_segment.o(i.draw_angle) refers to cdrcmple.o(.text) for __aeabi_cdrcmple
+    display_segment.o(i.draw_angle) refers to display_segment.o(i.selectDigit) for selectDigit
+    display_segment.o(i.draw_angle) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
+    display_segment.o(i.draw_angle) refers to display_segment.o(i.lightNum) for lightNum
+    display_segment.o(i.draw_d) refers to display_segment.o(i.selectDigit) for selectDigit
+    display_segment.o(i.draw_d) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
+    display_segment.o(i.draw_u) refers to display_segment.o(i.selectDigit) for selectDigit
+    display_segment.o(i.draw_u) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
+    display_segment.o(i.init_display) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_Init) for HAL_GPIO_Init
+    display_segment.o(i.lightNum) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
+    display_segment.o(i.selectDigit) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
     lis3dsh.o(i.HAL_SPI_MspInit) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_Init) for HAL_GPIO_Init
     lis3dsh.o(i.HAL_SPI_MspInit) refers to stm32f4xx_hal_gpio.o(i.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
     lis3dsh.o(i.LIS3DSH_DataRateCmd) refers to lis3dsh.o(i.LIS3DSH_Read) for LIS3DSH_Read
@@ -537,7 +556,7 @@ Section Cross References
     stm32f4xx_hal_tim.o(i.HAL_TIM_IC_Stop) refers to stm32f4xx_hal_tim.o(i.TIM_CCxChannelCmd) for TIM_CCxChannelCmd
     stm32f4xx_hal_tim.o(i.HAL_TIM_IC_Stop_DMA) refers to stm32f4xx_hal_tim.o(i.TIM_CCxChannelCmd) for TIM_CCxChannelCmd
     stm32f4xx_hal_tim.o(i.HAL_TIM_IC_Stop_IT) refers to stm32f4xx_hal_tim.o(i.TIM_CCxChannelCmd) for TIM_CCxChannelCmd
-    stm32f4xx_hal_tim.o(i.HAL_TIM_IRQHandler) refers to stm32f4xx_hal_tim.o(i.HAL_TIM_IC_CaptureCallback) for HAL_TIM_IC_CaptureCallback
+    stm32f4xx_hal_tim.o(i.HAL_TIM_IRQHandler) refers to main.o(i.HAL_TIM_IC_CaptureCallback) for HAL_TIM_IC_CaptureCallback
     stm32f4xx_hal_tim.o(i.HAL_TIM_IRQHandler) refers to stm32f4xx_hal_tim.o(i.HAL_TIM_OC_DelayElapsedCallback) for HAL_TIM_OC_DelayElapsedCallback
     stm32f4xx_hal_tim.o(i.HAL_TIM_IRQHandler) refers to stm32f4xx_hal_tim.o(i.HAL_TIM_PWM_PulseFinishedCallback) for HAL_TIM_PWM_PulseFinishedCallback
     stm32f4xx_hal_tim.o(i.HAL_TIM_IRQHandler) refers to stm32f4xx_hal_tim.o(i.HAL_TIM_PeriodElapsedCallback) for HAL_TIM_PeriodElapsedCallback
@@ -589,7 +608,7 @@ Section Cross References
     stm32f4xx_hal_tim.o(i.HAL_TIM_PWM_Stop_IT) refers to stm32f4xx_hal_tim.o(i.TIM_CCxChannelCmd) for TIM_CCxChannelCmd
     stm32f4xx_hal_tim.o(i.HAL_TIM_SlaveConfigSynchronization) refers to stm32f4xx_hal_tim.o(i.TIM_SlaveTimer_SetConfig) for TIM_SlaveTimer_SetConfig
     stm32f4xx_hal_tim.o(i.HAL_TIM_SlaveConfigSynchronization_IT) refers to stm32f4xx_hal_tim.o(i.TIM_SlaveTimer_SetConfig) for TIM_SlaveTimer_SetConfig
-    stm32f4xx_hal_tim.o(i.TIM_DMACaptureCplt) refers to stm32f4xx_hal_tim.o(i.HAL_TIM_IC_CaptureCallback) for HAL_TIM_IC_CaptureCallback
+    stm32f4xx_hal_tim.o(i.TIM_DMACaptureCplt) refers to main.o(i.HAL_TIM_IC_CaptureCallback) for HAL_TIM_IC_CaptureCallback
     stm32f4xx_hal_tim.o(i.TIM_DMADelayPulseCplt) refers to stm32f4xx_hal_tim.o(i.HAL_TIM_PWM_PulseFinishedCallback) for HAL_TIM_PWM_PulseFinishedCallback
     stm32f4xx_hal_tim.o(i.TIM_DMAError) refers to stm32f4xx_hal_tim.o(i.HAL_TIM_ErrorCallback) for HAL_TIM_ErrorCallback
     stm32f4xx_hal_tim.o(i.TIM_DMAPeriodElapsedCplt) refers to stm32f4xx_hal_tim.o(i.HAL_TIM_PeriodElapsedCallback) for HAL_TIM_PeriodElapsedCallback
@@ -1049,11 +1068,16 @@ Section Cross References
     printfa.o(i._printf_pre_padding) refers (Special) to iusefp.o(.text) for __I$use$fp
     printfa.o(i._snputc) refers (Special) to iusefp.o(.text) for __I$use$fp
     printfa.o(i._sputc) refers (Special) to iusefp.o(.text) for __I$use$fp
+    dadd.o(.text) refers (Special) to iusefp.o(.text) for __I$use$fp
+    dadd.o(.text) refers to llshl.o(.text) for __aeabi_llsl
+    dadd.o(.text) refers to llsshr.o(.text) for __aeabi_lasr
+    dadd.o(.text) refers to depilogue.o(.text) for _double_epilogue
     dmul.o(.text) refers (Special) to iusefp.o(.text) for __I$use$fp
     dmul.o(.text) refers to depilogue.o(.text) for _double_epilogue
     ddiv.o(.text) refers (Special) to iusefp.o(.text) for __I$use$fp
     ddiv.o(.text) refers to depilogue.o(.text) for _double_round
     f2d.o(.text) refers (Special) to iusefp.o(.text) for __I$use$fp
+    cdrcmple.o(.text) refers (Special) to iusefp.o(.text) for __I$use$fp
     d2f.o(.text) refers (Special) to iusefp.o(.text) for __I$use$fp
     d2f.o(.text) refers to fepilogue.o(.text) for _float_round
     dunder.o(i.__mathlib_dbl_divzero) refers to ddiv.o(.text) for __aeabi_ddiv
@@ -1081,9 +1105,6 @@ Section Cross References
     errno.o(i.__set_errno) refers to errno.o(.data) for .data
     depilogue.o(.text) refers to llshl.o(.text) for __aeabi_llsl
     depilogue.o(.text) refers to llushr.o(.text) for __aeabi_llsr
-    dadd.o(.text) refers to llshl.o(.text) for __aeabi_llsl
-    dadd.o(.text) refers to llsshr.o(.text) for __aeabi_lasr
-    dadd.o(.text) refers to depilogue.o(.text) for _double_epilogue
     dsqrt.o(.text) refers to llushr.o(.text) for __aeabi_llsr
     dsqrt.o(.text) refers to depilogue.o(.text) for _double_round
     dfixul.o(.text) refers to llushr.o(.text) for __aeabi_llsr
