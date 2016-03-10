@@ -5,7 +5,7 @@
 void init_display(void){
 	
 	// WARNING: DO NOT USE PORT A13, PORT A14, or PORT B3
-	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:CCD123, 5:E, 6:CCD3, 
+	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:Degree, 5:E, 6:CCD3, 
 	   7:DP, 8:CCD4, 9:, 10:, 11:F, 12:, 13:C, 14:A, 15:G, 16:B}
 	   GPIO Pin Mapping
 		 Segment Ctrls {CCD1:PC1, CCD2:PC2, CCD3:PC4, CCD4:PC5}
@@ -14,8 +14,8 @@ void init_display(void){
 		 Segments      {A:PB0, B:PB1, C:PB5, D:PB11, E:PB12, F:PB13, G:PB14 
 	
 	Keypad (8 pins needed)
-	Rows: D1, D2
-	Columns: D6, D7, D8, D9, D10, D11
+	Rows: D1, D2, D6 , D7
+	Columns: D8, D9, D10
 	Alarm LED : PD13
 	*/
 	
@@ -236,7 +236,7 @@ void draw_angle(float angle) {
 	int i;
 	int displayValues = 3;
 	int decimalPos;
-	float angleValue[3];
+	int angleValue[3];
 	//7-segment display in the form of XXX°, XX.Y °or X.YYdepending on the actual angle(i.e. 119°, 59.3°,7.55°)
 	
 	//XXX°
@@ -261,35 +261,61 @@ void draw_angle(float angle) {
 	
 	//Two digits to display (X.YY°)
 	else {
-		decimalPos = 1;
+		decimalPos = 3;
 		angleValue[0] = angle;
 		angleValue[1] = (angle*10 - angleValue[0]*10);
 		angleValue[2] = (angle*100 - angleValue[0]*100 - angleValue[1]*10);
 
 	}	
 	
-	for(i=3; i>0; i--) {
-		selectDigit(i);
+	for(i=4; i>0; i--) {
 		
-		if (i > displayValues) {
-			selectDigit(10);
+		
+
+		if (i ==4 ) {
+			//selectDigit(10);
+			reset();
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);	
 		}
 		else {
 			// Set decimal point on third value
+			reset();
+			selectDigit(i);
 			if (i == decimalPos) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 			else HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
 			
-			//light degree symbol
-			if (i == 3) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+			//light degree symbol		
 
 			lightNum(angleValue[3-i]);	
+		
 			
 		}
+			
 		//TODO: DELAY
-		//Delay(1);
+		//interupts at 500hz
+		//1 ms
+		Delay(2);
 	}
+	
+	
 
 }
+void reset(void) {
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); //a
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET); //b
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET); //c
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); //d
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); //e
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); //g
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);   // Digit 1
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); // Digit 2
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); // Digit 3
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); // Digit 4
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); //degree
+}
+
 
 void draw_d(void) {
 	//draw 'd' for down 
@@ -315,3 +341,10 @@ void draw_u(void) {
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); //g
 }
 
+void Delay(uint32_t time)
+{
+	
+  TimmingDelay = time;
+  while(TimmingDelay !=0);
+	
+}  

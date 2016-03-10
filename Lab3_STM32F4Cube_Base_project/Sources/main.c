@@ -12,11 +12,12 @@
 #include "stm32f4xx_hal.h"
 #include "supporting_functions.h"
 #include "lis3dsh.h"
-#include "sys_config.h"
+#include "global_vars.h"
 #include "accelerometer.h"
 #include "display_segment.h"
-#include "global_vars.h"
 #include "keypad.h"
+
+//#include "keypad.h"
 
 
 /* Private variables ---------------------------------------------------------*/
@@ -40,8 +41,6 @@ typedef struct kalman_t{
 } kalman_t;
 
 /* Private function prototypes -----------------------------------------------*/
-void init_interrupts(); //TODO
-void SystemClock_Config	(void); //TODO
 
 /**  Assembly Kalmann filter function
    * @brief  Filters values to remove noisy fluctuations
@@ -49,14 +48,25 @@ void SystemClock_Config	(void); //TODO
    * @retval Returns updated output array **/
 int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kalman_t* kalman);
 
+void init_TIM3(void);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim);
+void SystemClock_Config	(void); 
+
+
 /* Private functions ---------------------------------------------------------*/
 
 void init_TIM3(void) {
 	TIM_Base_InitTypeDef init_TIM;
+	// enable clock for TIM3 
+	__HAL_RCC_TIM3_CLK_ENABLE();
 	
+	// TODO: Calibrate clock for proper frequency
 	// Desired Rate = ClockFrequency / (prescaler * period)
 	// Rate = 1000Hz, frequency = 42MHz 
 	// need to setup period and prescaler
+	//set rate to 500Hz
+	
 	//period is in MHz
 	init_TIM.Period = 42;
 	init_TIM.Prescaler = 2000;
@@ -71,8 +81,7 @@ void init_TIM3(void) {
 
 	HAL_TIM_Base_MspInit(&handle_tim3);
 	
-	// enable clock for TIM3 
-	__TIM3_CLK_ENABLE();
+	
 	
 	HAL_TIM_Base_Init(&handle_tim3);
 	HAL_TIM_Base_Start_IT(&handle_tim3);
@@ -83,43 +92,106 @@ void init_TIM3(void) {
 	//HAL_NVIC_ClearPendingIRQ(TIM3_IRQn);
 }
 
+void display(float angle) {	
+	
+	upperBound = targetAngle + 5.0;
+	lowerBound = targetAngle - 5.0;
+
+	// Angle board down
+	if(angle < lowerBound) draw_u();
+	// Angle board up
+	else if(angle > upperBound) draw_d();
+	// Within derired range of +/-5 degrees; display user angle on display
+	else draw_angle(angle);
+ 
+}
+
 
 int main(void){	
   
+	float tmp;
+	float angle;
+	int count;
+	int test;
+	kalman_t kalmanPitch, kalmanRot;
+
+	//Configure kalman filter for pitch
+	kalmanPitch.q = 0.2;
+	kalmanPitch.r = 2.1;
+	kalmanPitch.x = 0.0;
+	kalmanPitch.p = 0.0;
+	kalmanPitch.k = 0.0;
+	
+	//Configure kalman filter for roll
+
+	kalmanRot.q = 0.2;
+	kalmanRot.r = 2.1;
+	kalmanRot.x = 0.0;
+	kalmanRot.p = 0.0;
+	kalmanRot.k = 0.0;
+	
 	/* MCU Configuration----------------------------------------------------------*/
   HAL_Init();
 
   /* Configure the system clock */
   SystemClock_Config();
 	
-  /* Initialize all configured peripherals */
-	
+  /* Initialize all configured peripherals and timers */
+  init_TIM3();
 	init_accelerometer(); //initialize accelerometer
 	init_display();
-	init_keypad();
+	//init_keypad();
+	
 //	__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI0_IRQn); //create software interrupt
 	
 	ready_to_update_accelerometer = 0; //set accelerometer initally to 0
+	tim3_flag = 0; //set timer flag intially to 0
+	
+	
+	printf("Start\n");
 
-	printf("Start");
 	//run when interrupt received
 	while (1){
-		
+		test = get_key();
+		printf("key entered: %d\n", test);
+		//
 		if(ready_to_update_accelerometer == 1) {
 			
 			LIS3DSH_ReadACC(accelerometer_out);
 			
 			//reset interrupt
-			printf("flag set\n");
+			//
 			ready_to_update_accelerometer = 0;
 			
 			//update real accelerometer values
 			update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
 			
+			//filtering
+			//Kalmanfilter_asm(pitch, output, ARRAY_LENGTH, &kalmanPitch);
+			//Kalmanfilter_asm(roll, output, ARRAY_LENGTH, &kalmanRot);
+			
 			//use pitch
-			angle = fabs(calc_pitch_angle());
-			printf("Tilt: %f, Rotation: %f\n", fabs(calc_pitch_angle()), fabs(calc_roll_angle()));
+			angle = fabs(calc_roll_angle());
+			printf("Pitch: %f, Rotation: %f\n", calc_pitch_angle(), calc_roll_angle());
 		}
+		
+		
+		//run when tim3 interupt goes off
+		if(tim3_flag == 1) {	
+			
+			tim3_flag = 0;
+			
+			
+			if(count >= 10) {				
+				tmp = angle;
+				count = 0;
+			}
+			count++;
+			
+		}
+		
+		display(tmp);
+		
 	}
 	
 	return 0;
@@ -129,10 +201,7 @@ int main(void){
   * @brief  Input Capture callback in non blocking mode 
   * @param  htim: pointer to a TIM_HandleTypeDef structure that contains
   *                the configuration information for TIM module.
-  * @retval None
   */
-//
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	
 	/* Prevent unused argument(s) compilation warning */
@@ -143,32 +212,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		LIS3DSH_ReadACC(accelerometer_out);
 	}	
 }	
-
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
 	/* Prevent unused argument(s) compilation warning */
   UNUSED(htim);
 	
-  if(htim->Instance == TIM3) {
-    upperBound = targetAngle + 5.0;
-    lowerBound = targetAngle - 5.0;
-    //do shit in here
-
-    if(angle < lowerBound) {
-      //angle down
-			
-			draw_d();
-    }
-    else if(angle > upperBound) {
-      //angle up
-			draw_u();
-    }
-    else {
-      //then we are in the derired range of +/-5 degrees 
-      //display user angle on display
-			draw_angle(angle);
-			
-    }
-  }
 }
 
 /** System Clock Configuration*/

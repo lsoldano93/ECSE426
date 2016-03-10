@@ -42,7 +42,6 @@
 #include "stm32f4xx_it.h"
 #include "global_vars.h"
 
-//uint8_t ready_to_update_accelerometer;
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
@@ -56,9 +55,11 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-
-
-
+uint8_t ready_to_update_accelerometer;
+uint8_t tim3_flag;
+uint16_t tim3_ticks;
+TIM_HandleTypeDef handle_tim3;
+uint32_t TimmingDelay;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -178,7 +179,6 @@ void SysTick_Handler(void)
   * @param  None
   * @retval None
   */
-uint8_t ready_to_update_accelerometer;
 void EXTI0_IRQHandler(void){
 	
 	// Listen to pin 0
@@ -192,15 +192,17 @@ void EXTI0_IRQHandler(void){
 /**
   * @}
   */ 
-uint16_t tim3_ticks;
-void HAL_TIM3_IRQHandler(void) {
+
+void TIM3_IRQHandler(void) {
 	
-	// Call interrupt handler for timer 3
 	HAL_TIM_IRQHandler(&handle_tim3);
-	 
-	// Set flag for timer tick
-	tim3_ticks++;
-	if(tim3_ticks > TIM3_BOUND) tim3_ticks = 0;
+
+	tim3_flag = 1;
+	
+
+	if(TimmingDelay !=0) {
+			TimmingDelay --;
+	}
 	
 }
 

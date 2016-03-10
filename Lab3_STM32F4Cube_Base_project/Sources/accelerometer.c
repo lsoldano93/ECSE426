@@ -28,10 +28,9 @@ void init_accelerometer(void) {
 	//Configure LIS3DSH accelermoter sensor
 	LIS3DSH_InitTypeDef init;
 	LIS3DSH_DRYInterruptConfigTypeDef init_it;
-	uint8_t data_ready;
 	GPIO_InitTypeDef GPIO_InitE;
-	
-	init.Power_Mode_Output_DataRate = LIS3DSH_DATARATE_25;  	// Active mode with data rate 100HZ
+	//might be 25
+	init.Power_Mode_Output_DataRate = LIS3DSH_DATARATE_100;  	// Active mode with data rate 100HZ
 	init.Axes_Enable = LIS3DSH_XYZ_ENABLE; 										// Enable all axes
 	init.Continous_Update = LIS3DSH_ContinousUpdate_Enabled;  // Enable continuous update
 	init.AA_Filter_BW = LIS3DSH_AA_BW_50; 										// Not sure about this one, BW = ODR/2

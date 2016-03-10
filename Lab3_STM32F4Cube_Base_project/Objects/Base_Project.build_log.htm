@@ -22,51 +22,22 @@ Dialog DLL:      TCM.DLL V1.14.5.0
  
 <h2>Project:</h2>
 C:\zzz\ECSE426\Lab3_STM32F4Cube_Base_project\Base_Project.uvprojx
-Project File Date:  03/08/2016
+Project File Date:  03/09/2016
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.05 update 2 (build 169)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Lab 3'
-compiling main.c...
-Sources\sys_config.h(6): warning:  #1295-D: Deprecated declaration GPIO_Config - give arg types
-  void GPIO_Config();
-Sources\sys_config.h(9): warning:  #1-D: last line of file ends without a newline
+compiling keypad.c...
+Sources\global_vars.h(19): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\accelerometer.h(41): warning:  #1-D: last line of file ends without a newline
+Sources\keypad.h(57): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\display_segment.h(14): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\global_vars.h(13): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\keypad.h(23): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\main.c(43): warning:  #1295-D: Deprecated declaration init_interrupts - give arg types
-  void init_interrupts(); //TODO
-Sources\main.c(125): warning:  #111-D: statement is unreachable
-        return 0;
-Sources\main.c(152): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-      upperBound = targetAngle + 5.0;
-Sources\main.c(153): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-      lowerBound = targetAngle - 5.0;
-Sources\main.c: 10 warnings, 0 errors
-compiling stm32f4xx_it.c...
-Sources\global_vars.h(13): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\stm32f4xx_it.c: 1 warning, 0 errors
-compiling display_segment.c...
-Sources\display_segment.h(14): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\display_segment.c(243): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        if (angle >= 100.0){
-Sources\display_segment.c(253): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        else if(angle >= 10.0) {
-Sources\display_segment.c: 3 warnings, 0 errors
+Sources\keypad.c(168): warning:  #550-D: variable "column" was set but never used
+        uint8_t row, column;
+Sources\keypad.c: 3 warnings, 0 errors
 linking...
-.\Objects\Base_Project.axf: Error: L6200E: Symbol keypad_map multiply defined (by keypad.o and main.o).
-Not enough information to list image symbols.
-Not enough information to list the image map.
-Finished: 2 information, 0 warning and 1 error messages.
-".\Objects\Base_Project.axf" - 1 Error(s), 14 Warning(s).
+Program Size: Code=15280 RO-data=624 RW-data=44 ZI-data=1236  
+".\Objects\Base_Project.axf" - 0 Error(s), 3 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -191,7 +162,6 @@ Package Vendor: Keil
 
    * Component: Keil::Device:STM32Cube HAL:USART:1.4.2
       Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_usart.c
-Target not created.
 </pre>
 </body>
 </html>

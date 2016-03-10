@@ -15,7 +15,9 @@
 /**
    * @brief Initializes keypad for proper operation by configuring GPIO pins as input
    */
-void init_keypad(void);
+void init_rows(void);
+
+void init_columns(void);
 
 /**
    * @brief Reports whether or not key is still active low after DEBOUNCE_DELAY ms
@@ -50,14 +52,6 @@ int handle_key_press(void);
 
 /* Private variables ---------------------------------------------------------*/
 
-const uint16_t col_pinmap[COLS] = {GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_6};
-const uint16_t row_pinmap[ROWS] = {GPIO_PIN_7, GPIO_PIN_8, GPIO_PIN_9, GPIO_PIN_10};
 
-// 11 indicates '*' and 12 indicates '#'
-const uint8_t keypad_map[ROWS][COLS] = {
-	{1, 2, 3},
-	{4, 5, 6},
-	{7, 8, 9},
-	{11, 0, 12}};
 
 #endif

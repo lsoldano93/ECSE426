@@ -31,7 +31,6 @@ typedef struct {
 } accelerometer_values;
 
 
-void init_interrupts(void);
 void init_accelerometer(void); 
 
 void update_accel_values(float Ax, float Ay, float Az);

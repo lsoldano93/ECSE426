@@ -1,28 +1,97 @@
 #include <stdio.h>
 #include "keypad.h"
+//
+const uint16_t col_pinmap[3] = {GPIO_PIN_8, GPIO_PIN_9, GPIO_PIN_10};
+const uint16_t row_pinmap[4] = {GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_6, GPIO_PIN_7};
+
+// 11 indicates '*' and 12 indicates '#'
+const uint8_t keypad_map[4][3] = {
+	{1, 2, 3},
+	{4, 5, 6},
+	{7, 8, 9},
+	{11, 0, 12}};
 
 /* Private functions ---------------------------------------------------------*/
 
+	GPIO_InitTypeDef GPIO_row, GPIO_col;
 /**
    * @brief Initializes keypad for proper operation by configuring GPIO pins as input
    */
-void init_keypad(void) {
+
+/*
+		Keypad (8 pins needed)
+	Rows: D1, D2, D6 , D7
+	Columns: D8, D9, D10
+
+*/
+void init_rows(void) {
 	
-	//initialize GPIO pins for the keypad
-	GPIO_InitTypeDef GPIO_InitD;
+	//Reset bits on columns
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_9);
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_10);
+		__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_1);
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_2);
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_6);
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_7);
+		
+	//initialize GPIO rows of the keypad to active low
+
 	
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 	
-		// Give initialization values for GPIO D pin sets
-	GPIO_InitD.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 ;
+	//initialize rows
+	GPIO_row.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_6 | GPIO_PIN_7; 
 	
-	GPIO_InitD.Mode = GPIO_MODE_IT_RISING;
-	GPIO_InitD.Pull = GPIO_PULLDOWN;
-	GPIO_InitD.Speed =  GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOD, &GPIO_InitD);
-
+	GPIO_row.Mode = GPIO_MODE_IT_RISING;
+	GPIO_row.Pull = GPIO_PULLUP;
+	GPIO_row.Speed =  GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOD, &GPIO_row);
+	
+	
+	//__HAL_RCC_GPIOD_CLK_ENABLE();
+	
+	// initialize colums
+	GPIO_col.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 ;
+	
+	GPIO_col.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_col.Pull = GPIO_NOPULL;
+	GPIO_col.Speed =  GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOD, &GPIO_col);
 }
 
+void init_columns(void) {
+	
+	//Reset bit on rows
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_1);
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_2);
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_6);
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_7);
+	
+		//initialize GPIO rows of the keypad to active low
+
+	//__HAL_RCC_GPIOD_CLK_ENABLE();
+	
+	//initialize rows
+	GPIO_row.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_6 | GPIO_PIN_7; 
+	
+	
+	GPIO_row.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_row.Pull = GPIO_NOPULL;
+	GPIO_row.Speed =  GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOD, &GPIO_row);
+	
+	
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	
+	// initialize colums
+	GPIO_col.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 ;
+	
+	GPIO_col.Mode = GPIO_MODE_IT_RISING;
+	GPIO_col.Pull = GPIO_PULLUP;
+	GPIO_col.Speed =  GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOD, &GPIO_col);
+}
 
 /**
    * @brief Reports whether or not key is still active low after DEBOUNCE_DELAY ms
@@ -64,7 +133,7 @@ uint8_t debounce(uint16_t COL_PIN, uint16_t ROW_PIN){
    * @retval Int of column activated
    */
 uint8_t get_column(void) {
-	
+	init_columns();
 	// Row selection determined by active low 
 	if(!HAL_GPIO_ReadPin(GPIOD, col_pinmap[0])) return 0;
 	else if(!HAL_GPIO_ReadPin(GPIOD, col_pinmap[1])) return 1;
@@ -79,7 +148,7 @@ uint8_t get_column(void) {
    * @retval Int of row activated
    */
 uint8_t get_row(void) {
-	
+	init_rows();
 	// Row selection determined by active low (TODO find pins)
 	if(!HAL_GPIO_ReadPin(GPIOD, row_pinmap[0])) return 0;
 	else if(!HAL_GPIO_ReadPin(GPIOD, row_pinmap[1])) return 1;
@@ -99,11 +168,17 @@ int get_key(void) {
 	uint8_t row, column;
 	
 	// Interupt handling, and debouncing;
-	if((row = get_row()) == 9) return -1;
-	if((column = get_column()) == 9) return -1;
-	if(!debounce(col_pinmap[column], row_pinmap[row])) return -1;
 	
-	return keypad_map[row][column];		
+	if((row = get_row()) == 9) return -1;
+	
+	if((column = get_column()) == 9) return -1;
+	
+
+	
+	//if(!debounce(col_pinmap[column], row_pinmap[row])) return -1;
+	
+	//return keypad_map[row][column];		
+	return row;
 }
 
 
