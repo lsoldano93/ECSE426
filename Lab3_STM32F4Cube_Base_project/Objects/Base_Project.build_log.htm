@@ -26,15 +26,72 @@ Project File Date:  03/10/2016
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.05 update 2 (build 169)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
-Build target 'Lab 3'
+Rebuild target 'Lab 3'
+compiling main.c...
+Sources\main.h(75): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\global_vars.h(19): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\accelerometer.h(62): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\display_segment.h(48): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\keypad.h(54): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\main.h(75): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\main.c(71): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        upperBound = targetAngle + 5.0;
+Sources\main.c(72): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        lowerBound = targetAngle - 5.0;
+Sources\main.c(169): warning:  #111-D: statement is unreachable
+        return 0;
+Sources\main.c: 9 warnings, 0 errors
+compiling fput_debug.c...
+compiling supporting_functions.c...
+compiling stm32f4xx_it.c...
+Sources\main.h(75): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\global_vars.h(19): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\accelerometer.h(62): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\display_segment.h(48): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\keypad.h(54): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\main.h(75): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\stm32f4xx_it.c: 6 warnings, 0 errors
+compiling accelerometer.c...
+Sources\accelerometer.h(62): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\accelerometer.c(16): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        accel.x = Ax*
+CC11 + Ay*ACC12 + Az*ACC13 + ACC10;
+Sources\accelerometer.c(17): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        accel.y = Ax*
+CC21 + Ay*
+CC22 + Az*ACC23 + ACC20;
+Sources\accelerometer.c(18): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        accel.z = Ax*
+CC31 + Ay*
+CC32 + Az*
+CC33 + ACC30;
+Sources\accelerometer.c(40): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        return 90.0 - 
+EGREES(acos(accel.z/1000.0));
+Sources\accelerometer.c(84): warning:  #1-D: last line of file ends without a newline
+  }
+Sources\accelerometer.c: 6 warnings, 0 errors
 compiling keypad.c...
-Sources\global_vars.h(18): warning:  #1-D: last line of file ends without a newline
+Sources\global_vars.h(19): warning:  #1-D: last line of file ends without a newline
   #endif
 Sources\keypad.h(54): warning:  #1-D: last line of file ends without a newline
   #endif
 Sources\keypad.c: 2 warnings, 0 errors
 compiling display_segment.c...
-Sources\global_vars.h(18): warning:  #1-D: last line of file ends without a newline
+Sources\global_vars.h(19): warning:  #1-D: last line of file ends without a newline
   #endif
 Sources\display_segment.h(48): warning:  #1-D: last line of file ends without a newline
   #endif
@@ -47,9 +104,54 @@ Sources\display_segment.c(256): warning:  #177-D: variable "displayValues" was d
 Sources\display_segment.c(379): warning:  #1-D: last line of file ends without a newline
   }  
 Sources\display_segment.c: 6 warnings, 0 errors
+assembling Kalmanfilter_asm.s...
+compiling LIS3DSH.c...
+Accelerometer\src\LIS3DSH.c(369): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+          *out =(float)(
+IS3DSH_SENSITIVITY_2G * (float)aggregateResult);
+Accelerometer\src\LIS3DSH.c(379): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+          *out =(float)(
+IS3DSH_SENSITIVITY_4G * (float)aggregateResult);
+Accelerometer\src\LIS3DSH.c(389): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+          *out =(float)(
+IS3DSH_SENSITIVITY_6G * (float)aggregateResult);
+Accelerometer\src\LIS3DSH.c(399): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+          *out =(float)(
+IS3DSH_SENSITIVITY_8G * (float)aggregateResult);
+Accelerometer\src\LIS3DSH.c(409): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+          *out =(float)(
+IS3DSH_SENSITIVITY_16G * (float)aggregateResult);
+Accelerometer\src\LIS3DSH.c: 5 warnings, 0 errors
+compiling stm32f4xx_hal.c...
+compiling stm32f4xx_hal_adc.c...
+compiling stm32f4xx_hal_adc_ex.c...
+compiling stm32f4xx_hal_cortex.c...
+compiling stm32f4xx_hal_dma.c...
+compiling stm32f4xx_hal_dma_ex.c...
+compiling stm32f4xx_hal_flash.c...
+compiling stm32f4xx_hal_flash_ex.c...
+compiling stm32f4xx_hal_gpio.c...
+compiling stm32f4xx_hal_i2c.c...
+compiling stm32f4xx_hal_i2s.c...
+compiling stm32f4xx_hal_i2s_ex.c...
+compiling stm32f4xx_hal_pwr.c...
+compiling stm32f4xx_hal_pwr_ex.c...
+compiling stm32f4xx_hal_rcc.c...
+compiling stm32f4xx_hal_rcc_ex.c...
+compiling stm32f4xx_hal_rtc.c...
+compiling stm32f4xx_hal_rtc_ex.c...
+compiling stm32f4xx_hal_spi.c...
+compiling stm32f4xx_hal_sram.c...
+compiling stm32f4xx_hal_tim.c...
+compiling stm32f4xx_hal_tim_ex.c...
+compiling stm32f4xx_hal_uart.c...
+compiling stm32f4xx_hal_usart.c...
+compiling stm32f4xx_ll_fsmc.c...
+assembling startup_stm32f407xx.s...
+compiling system_stm32f4xx.c...
 linking...
-Program Size: Code=13652 RO-data=620 RW-data=32 ZI-data=1240  
-".\Objects\Base_Project.axf" - 0 Error(s), 8 Warning(s).
+Program Size: Code=14140 RO-data=620 RW-data=36 ZI-data=1236  
+".\Objects\Base_Project.axf" - 0 Error(s), 34 Warning(s).
 
 <h2>Software Packages used:</h2>
 

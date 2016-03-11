@@ -14,6 +14,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 
+uint8_t key_step;
 float targetAngle = 90.0;
 float accelerometer_out[3]; 		// Array being updated by accelerometer.c
 
@@ -29,9 +30,8 @@ void init_TIM3(void) {
 	// Enable clock for TIM3 
 	__HAL_RCC_TIM3_CLK_ENABLE();
 	
-	// TODO: Calibrate clock for proper frequency
 	// Desired Rate = ClockFrequency / (prescaler * period)
-	// Rate = 1000Hz, frequency = 42MHz 
+	// Rate = 1000Hz, frequency = 42MHz																		 TODO: FIX to 500 HZ
 	// need to setup period and prescaler
 	// set rate to 500Hz
 	
@@ -86,21 +86,21 @@ void display(float angle) {
    * @retval Returns 0 upon succesful completion **/
 int main(void){	
   
-	float angle;
-	int test;
+	float pitch, roll;
+	int values[2] = {0, 0};
 	kalman_t kalmanPitch, kalmanRot;
 
 	//Configure kalman filter for pitch
-	kalmanPitch.q = 0.2;
-	kalmanPitch.r = 2.1;
-	kalmanPitch.x = 0.0;
+	kalmanPitch.q = 0.02;
+	kalmanPitch.r = 4.5;
+	kalmanPitch.x = 90.0;
 	kalmanPitch.p = 0.0;
 	kalmanPitch.k = 0.0;
 	
 	//Configure kalman filter for roll
-	kalmanRot.q = 0.2;
-	kalmanRot.r = 2.1;
-	kalmanRot.x = 0.0;
+	kalmanRot.q = 0.015;
+	kalmanRot.r = 1.5;
+	kalmanRot.x = 90.0;
 	kalmanRot.p = 0.0;
 	kalmanRot.k = 0.0;
 	
@@ -114,23 +114,31 @@ int main(void){
   init_TIM3();
 	init_accelerometer(); 
 	init_display();
+	__HAL_RCC_GPIOD_CLK_ENABLE(); 		// Initializes clock for keypad.c
 	
 	//	__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI0_IRQn); //create software interrupt
 	
 	// Set global flags to initial value of 0
 	ready_to_update_accelerometer = 0; 
 	tim3_flag = 0;
+	key_step = 0;
+	
 	
 	printf("Begin User Interface\n");
 
 	while (1){
 		
 		// Read for key press
-		if ((test = handle_key_press()) != -1 && test <= 180) {
-			targetAngle = test;
-			printf("Angle entered: %d\n", test);
+		handle_key_press(values);
+		if (values[1] == 1 && values[0] <= 180){
+			targetAngle = values[0];
+			key_step = 0;
+			printf("Angle entered: %d\n", values[0]);
 		}
-		else if (test != -1 && test > 180) printf("Angle (%d) invalid \n", test);
+		else if (values[1] == 1 && values[0] > 180){
+			key_step = 0;
+			printf("Angle (%d) invalid \n", values[0]);
+		}
 		
 		// If accelerometer interrupt received, accquire new values and update variables
 		if(ready_to_update_accelerometer == 1) {
@@ -141,18 +149,20 @@ int main(void){
 			// Update real accelerometer values
 			update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
 			
-			// Kalman filtering
-			//Kalmanfilter_asm(pitch, output, ARRAY_LENGTH, &kalmanPitch);
-			//Kalmanfilter_asm(roll, output, ARRAY_LENGTH, &kalmanRot);
+			roll = calc_roll_angle();
+			pitch = calc_pitch_angle();
 			
-			angle = calc_roll_angle();
+			// Kalman filtering
+			Kalmanfilter_asm(&pitch, &pitch, 1, &kalmanPitch);
+			Kalmanfilter_asm(&roll, &roll, 1, &kalmanRot);
 			
 			//printf("%f\n", angle);
+			//printf("%f, %f\n", calc_roll_angle(), calc_pitch_angle());
 			//printf("%f,%f,%f\n", accelerometer_out[0],accelerometer_out[1],accelerometer_out[2]);
 			
 		} 
 		
-		display(angle);
+		display(roll);
 		
 	}
 	

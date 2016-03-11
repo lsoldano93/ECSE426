@@ -535,6 +535,11 @@
               <FileType>5</FileType>
               <FilePath>.\Sources\main.h</FilePath>
             </File>
+            <File>
+              <FileName>Kalmanfilter_asm.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

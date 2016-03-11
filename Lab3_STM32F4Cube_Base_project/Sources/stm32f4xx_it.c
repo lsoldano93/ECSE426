@@ -200,7 +200,6 @@ void TIM3_IRQHandler(void) {
 	HAL_TIM_IRQHandler(&handle_tim3);
 
 	tim3_flag = 1;
-	
 
 	if(TimmingDelay !=0) {
 			TimmingDelay --;

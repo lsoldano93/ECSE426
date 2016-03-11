@@ -17,14 +17,13 @@ const uint8_t keypad_map[4][3] = {
 	{7, 8, 9},
 	{11, 0, 12}};
 
+GPIO_InitTypeDef GPIO_row, GPIO_col;
+
 	
 /* Private functions ---------------------------------------------------------*/
-
-	GPIO_InitTypeDef GPIO_row, GPIO_col;
-/**
-   * @brief Initializes keypad for proper operation by configuring GPIO pins as input
-   */
 	
+/**  Initialization of pins to allow for row read
+   * @brief  Sets row pins as input pullup and column pins as output no pull **/
 void init_rows(void) {
 	
 	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:Degree, 5:E, 6:CCD3, 
@@ -43,8 +42,8 @@ void init_rows(void) {
 	
 		 Alarm LED : PD13
 	*/
-		
-	__HAL_RCC_GPIOD_CLK_ENABLE();
+	
+	// ***NOTE*** GPIOD Clock enabled in main() to avoid redundancy
 	
 	//initialize rows
 	GPIO_row.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_6 | GPIO_PIN_7; 
@@ -64,6 +63,8 @@ void init_rows(void) {
 	
 }
 
+/**  Initialization of pins to allow for column read
+   * @brief  Sets column pins as input pullup and row pins as output no pull **/
 void init_columns(void) {
 	
 	/*
@@ -74,13 +75,13 @@ void init_columns(void) {
 		 Alarm LED : PD13
 	*/
 	
-	//Reset bit on rows
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_1);
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_2);
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_6);
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_7);
-
-	__HAL_RCC_GPIOD_CLK_ENABLE();
+	// ***NOTE*** GPIOD Clock enabled in main() to avoid redundancy
+	
+	//Reset bit on rows (TODO: Reset bit)
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_1);
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_2);
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_6);
+//	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_7);
 	
 	//initialize rows
 	GPIO_row.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_6 | GPIO_PIN_7; 
@@ -138,7 +139,7 @@ uint8_t get_row(void) {
 	// Initialize pins to allow for rows as input
 	init_rows();
 	
-	// Row selection determined by active low (TODO find pins)
+	// Row selection determined by active low 
 	if(!HAL_GPIO_ReadPin(GPIOD, row_pinmap[3])) return 3;
 	else if(!HAL_GPIO_ReadPin(GPIOD, row_pinmap[2])) return 2;
 	else if(!HAL_GPIO_ReadPin(GPIOD, row_pinmap[1])) return 0;
@@ -171,8 +172,8 @@ int get_key(void) {
 		// Wait state
 		while(keypad_map[get_row()][get_column()] == key){ 
 			i++;
+			//printf("Key:%d\n", key);
 			delay(25); 
-			//printf("%d\n",key);
 		}
 		
 		// Key held long enough and isn't noise
@@ -189,34 +190,75 @@ int get_key(void) {
 
 /**
    * @brief Reports action on keypad
-   * @retval -1 if no key pressed yet, angle value if they have
+	 * @param values[0] = angle, values[1] = boolean for enter press
+   * @retval values[0] = current angle, values[1] = 1 if enter pressed
    */
-int handle_key_press(void) {
+void handle_key_press(int* values) {
 
-	int key;
-	int i = 0; 
-	int angle = 0;
+	int key; 
 	
-	// If first key pressed is not digit, press was not important
-	if((key = get_key()) == -1 || key == 0 || key == 11 || key == 12) return -1;
-	
-	angle = key;
-	
-	while(1){
+	if (key_step == 0){
+		
+		// If first key pressed is not digit, press was not important
+		if((key = get_key()) == -1 || key == 11 || key == 12){
+			values[0] = 0;
+			values[1] = -1;
+		}
+		else{
+			values[0] = key;
+			values[1] = 0;
+			key_step++;
+		}
+		
+		return;
+	}
+	else if (key_step == 1) {
 		
 		// Wait for key press to be relavant
-		while((key = get_key()) == -1 || key == 11);
+		if((key = get_key()) == -1 || key == 11){
+			values[1] = -1;
+			return;
+		}
 		
-		if (key != 12) angle = angle * 10 + key;
-		else return angle;
+		if (key != 12){
+			values[0] = values[0] * 10 + key;
+			values[1] = 0;
+			key_step++;
+		}
+		else values[1] = 1;
 		
-		if((i += 1) == 2) break;
+		return;
 	}
+	else if (key_step == 2){
 	
-	while((key = get_key()) != 12);
+		// Wait for key press to be relavant
+		if((key = get_key()) == -1 || key == 11){
+			values[1] = -1;
+			return;
+		}
+		
+		if (key != 12){
+			values[0] = values[0] * 10 + key;
+			values[1] = 0;
+			key_step++;
+		}
+		else values[1] = 1;
+		
+		return;
+		
+	}
+	else {
+		
+		// If last key not enter, don't register anything
+		if((key = get_key()) == 12){
+			values[1] = 1;
+			return;
+		}
+		
+		values[1] = -1;
+		return;
 	
-	return angle;
-	
+	}
 }
 
 

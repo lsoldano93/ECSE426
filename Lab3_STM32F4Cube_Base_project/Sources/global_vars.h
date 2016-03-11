@@ -8,6 +8,7 @@
 // Flags
 extern uint8_t ready_to_update_accelerometer;
 extern uint8_t tim3_flag;
+extern uint8_t key_step;
 extern uint16_t tim3_ticks;
 extern uint32_t TimmingDelay;
 
