@@ -501,19 +501,9 @@
               <FilePath>.\Sources\accelerometer.c</FilePath>
             </File>
             <File>
-              <FileName>config.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\config.c</FilePath>
-            </File>
-            <File>
               <FileName>accelerometer.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Sources\accelerometer.h</FilePath>
-            </File>
-            <File>
-              <FileName>sys_config.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\sys_config.h</FilePath>
             </File>
             <File>
               <FileName>keypad.h</FileName>
@@ -539,6 +529,11 @@
               <FileName>global_vars.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Sources\global_vars.h</FilePath>
+            </File>
+            <File>
+              <FileName>main.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\main.h</FilePath>
             </File>
           </Files>
         </Group>

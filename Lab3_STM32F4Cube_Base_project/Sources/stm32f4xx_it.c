@@ -55,11 +55,13 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+
 uint8_t ready_to_update_accelerometer;
 uint8_t tim3_flag;
 uint16_t tim3_ticks;
 TIM_HandleTypeDef handle_tim3;
 uint32_t TimmingDelay;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 

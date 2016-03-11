@@ -8,7 +8,7 @@
 
 #define ROWS 4
 #define COLS 3
-#define DEBOUNCE_DELAY 50 // ms
+#define DEBOUNCE_DELAY 25 // 50 ms
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -19,12 +19,9 @@ void init_rows(void);
 
 void init_columns(void);
 
-/**
-   * @brief Reports whether or not key is still active low after DEBOUNCE_DELAY ms
-	 * @param Row and col GPIO pins associated with D-set where debounce should be checked
-   * @retval 1 if proper value read, 0 if effects due to bounce detected
-   */
-uint8_t debounce(uint16_t COL_PIN, uint16_t ROW_PIN);
+/**  Uses timer 3 to generate delay for display
+   * @brief  Allows for software delay to be used for display purposes **/
+void delay(uint32_t time);
 
 /**
    * @brief Reports column of key that was pressed

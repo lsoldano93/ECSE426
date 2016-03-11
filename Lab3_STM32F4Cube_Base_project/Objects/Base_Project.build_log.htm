@@ -22,22 +22,34 @@ Dialog DLL:      TCM.DLL V1.14.5.0
  
 <h2>Project:</h2>
 C:\zzz\ECSE426\Lab3_STM32F4Cube_Base_project\Base_Project.uvprojx
-Project File Date:  03/09/2016
+Project File Date:  03/10/2016
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.05 update 2 (build 169)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Lab 3'
 compiling keypad.c...
-Sources\global_vars.h(19): warning:  #1-D: last line of file ends without a newline
+Sources\global_vars.h(18): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\keypad.h(57): warning:  #1-D: last line of file ends without a newline
+Sources\keypad.h(54): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\keypad.c(168): warning:  #550-D: variable "column" was set but never used
-        uint8_t row, column;
-Sources\keypad.c: 3 warnings, 0 errors
+Sources\keypad.c: 2 warnings, 0 errors
+compiling display_segment.c...
+Sources\global_vars.h(18): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\display_segment.h(48): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\display_segment.c(261): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        if (angle >= 100.0){
+Sources\display_segment.c(272): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        else if(angle >= 10.0) {
+Sources\display_segment.c(256): warning:  #177-D: variable "displayValues" was declared but never referenced
+        int displayValues = 3;
+Sources\display_segment.c(379): warning:  #1-D: last line of file ends without a newline
+  }  
+Sources\display_segment.c: 6 warnings, 0 errors
 linking...
-Program Size: Code=15280 RO-data=624 RW-data=44 ZI-data=1236  
-".\Objects\Base_Project.axf" - 0 Error(s), 3 Warning(s).
+Program Size: Code=13652 RO-data=620 RW-data=32 ZI-data=1240  
+".\Objects\Base_Project.axf" - 0 Error(s), 8 Warning(s).
 
 <h2>Software Packages used:</h2>
 

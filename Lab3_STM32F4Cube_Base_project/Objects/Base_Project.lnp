@@ -4,7 +4,6 @@
 ".\objects\supporting_functions.o"
 ".\objects\stm32f4xx_it.o"
 ".\objects\accelerometer.o"
-".\objects\config.o"
 ".\objects\keypad.o"
 ".\objects\display_segment.o"
 ".\objects\lis3dsh.o"
