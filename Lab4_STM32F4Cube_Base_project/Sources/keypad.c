@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include "keypad.h"
 
+uint8_t key_state;
+uint8_t tilt_state; 
+
 /* Private variables ---------------------------------------------------------*/
 
 // Pin maps for keypad columns and rows
@@ -77,12 +80,6 @@ void init_columns(void) {
 	
 	// ***NOTE*** GPIOD Clock enabled in main() to avoid redundancy
 	
-	//Reset bit on rows
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_1);
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_2);
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_6);
-	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_7);
-	
 	//initialize rows
 	GPIO_row.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_6 | GPIO_PIN_7; 
 	
@@ -100,16 +97,6 @@ void init_columns(void) {
 	HAL_GPIO_Init(GPIOD, &GPIO_col);
 	
 }
-
-/**  Uses timer 3 to generate delay for display
-   * @brief  Allows for software delay to be used for display purposes **/
-void delay(uint32_t time)
-{
-	
-  TimmingDelay = time;
-  while(TimmingDelay !=0);
-	
-}  
 
 
 /**
@@ -172,8 +159,7 @@ int get_key(void) {
 		// Wait state
 		while(keypad_map[get_row()][get_column()] == key){ 
 			i++;
-			//printf("Key:%d\n", key);
-			delay(25); 
+			osDelay(25); 
 		}
 		
 		// Key held long enough and isn't noise
@@ -188,77 +174,21 @@ int get_key(void) {
 }
 
 
-/**
-   * @brief Reports action on keypad
-	 * @param values[0] = angle, values[1] = boolean for enter press
-   * @retval values[0] = current angle, values[1] = 1 if enter pressed
+/**  Handle key presses
+   * @brief Pressing 0 toggles temperature/accelerometer; pressing 1/2 toggles tilt angles
    */
-void handle_key_press(int* values) {
+void handle_key_press(void) {
 
 	int key; 
 	
-	if (key_step == 0){
+	if ((key = get_key()) == -1) return;
+	if (key == 0 && key_state == 0) key_state = 1;
+	else if (key == 0 && key_state == 1) key_state = 0;
+	else if (key == 1) tilt_state = 1;
+	else if (key == 2) tilt_state = 2;
 		
-		// If first key pressed is not digit, press was not important
-		if((key = get_key()) == -1 || key == 11 || key == 12){
-			values[0] = 0;
-			values[1] = -1;
-		}
-		else{
-			values[0] = key;
-			values[1] = 0;
-			key_step++;
-		}
-		
-		return;
-	}
-	else if (key_step == 1) {
-		
-		// Wait for key press to be relavant
-		if((key = get_key()) == -1 || key == 11){
-			values[1] = -1;
-			return;
-		}
-		
-		if (key != 12){
-			values[0] = values[0] * 10 + key;
-			values[1] = 0;
-			key_step++;
-		}
-		else values[1] = 1;
-		
-		return;
-	}
-	else if (key_step == 2){
+	return;
 	
-		// Wait for key press to be relavant
-		if((key = get_key()) == -1 || key == 11){
-			values[1] = -1;
-			return;
-		}
-		
-		if (key != 12){
-			values[0] = values[0] * 10 + key;
-			values[1] = 0;
-			key_step++;
-		}
-		else values[1] = 1;
-		
-		return;
-		
-	}
-	else {
-		
-		// If last key not enter, don't register anything
-		if((key = get_key()) == 12){
-			values[1] = 1;
-			return;
-		}
-		
-		values[1] = -1;
-		return;
-	
-	}
 }
 
 

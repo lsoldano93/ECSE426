@@ -22,23 +22,26 @@ GPIO_InitTypeDef 				LED_configuration;
 int start_Thread_LED (void) {
 
   tid_Thread_LED = osThreadCreate(osThread(Thread_LED ), NULL); // Start LED_Thread
-  if (!tid_Thread_LED) return(-1); 
+  if (!tid_Thread_LED){
+		printf("Error starting LED thread!");
+		return(-1); 
+	}
   return(0);
 }
 
  /*----------------------------------------------------------------------------
 *      Thread  'LED_Thread': Toggles LED
  *---------------------------------------------------------------------------*/
-	void Thread_LED (void const *argument) {
-		while(1){
-				osDelay(1000);
-				HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
-			}
-	}
+void Thread_LED (void const *argument) {
+	while(1){
+			osDelay(1000);
+			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+		}
+}
 /*----------------------------------------------------------------------------
  *      Initialize the GPIO associated with the LED
  *---------------------------------------------------------------------------*/
-	void initializeLED_IO (void){
+void initialize_LED_IO (void){
 	
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 	

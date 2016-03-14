@@ -3,6 +3,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
+#include "cmsis_os.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_gpio.h"
 #include "global_vars.h"
@@ -42,12 +43,10 @@ uint8_t get_row(void);
    * @retval Returns exact key pressed **/
 int get_key(void);
 
-/**
-   * @brief Reports action on keypad
-	 * @param values[0] = angle, values[1] = boolean for enter press
-   * @retval values[0] = current angle, values[1] = 1 if enter pressed
+/**  Handle key presses
+   * @brief Pressing 0 toggles temperature/accelerometer; pressing 1/2 toggles tilt angles
    */
-void handle_key_press(int* values);
+void handle_key_press(void);
 
 
 

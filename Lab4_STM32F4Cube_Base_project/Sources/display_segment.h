@@ -4,6 +4,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal_gpio.h"
 #include "global_vars.h"
+#include "cmsis_os.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -23,26 +24,19 @@ void selectDigit(int digit);
 	 * @param  Value to be displayed **/
 void lightNum(int num);
 
+/**  Causes the display of a temperature value
+   * @brief  Draws temperature on display
+	 * @param  Float of temperature to be displayed **/
+void draw_temperature(float temp);
+
 /**  Causes the display of an angle value
    * @brief  Draws angle on display
-	 * @param  Angle to be displayed **/
+	 * @param  Float of angle to be displayed **/
 void draw_angle(float angle);
-
-/**  Causes display of tilt-down instruction animations
-   * @brief  Displays letter d for tilt down **/
-void draw_d(void);
-
-/**  Causes display of tilt-up instruction animations
-   * @brief  Displays letter u for tilt up **/
-void draw_u(void);
 
 /**  Resets all display pins
    * @brief  "" **/
-void reset(void);
-
-/**  Uses timer 3 to generate delay for display
-   * @brief  Allows for software delay to be used for display purposes **/
-void Delay(uint32_t time);
+void reset();
 
 
 #endif

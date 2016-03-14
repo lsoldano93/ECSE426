@@ -22,7 +22,7 @@ Dialog DLL:      TCM.DLL V1.14.5.0
  
 <h2>Project:</h2>
 C:\zzz\ECSE426\Lab4_STM32F4Cube_Base_project\Blinky.uvprojx
-Project File Date:  01/20/2016
+Project File Date:  03/14/2016
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.05 update 2 (build 169)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
@@ -30,14 +30,25 @@ Rebuild target 'Lab4'
 compiling main.c...
 Sources\accelerometer.h(62): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\keypad.h(8): error:  #5: cannot open source input file "global_vars.h": No such file or directory
-  #include "global_vars.h"
-Sources\main.c: 1 warning, 1 error
+Sources\keypad.h(53): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\display_segment.h(39): warning:  #1295-D: Deprecated declaration reset - give arg types
+  void reset();
+Sources\display_segment.h(42): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\Thread_TempSensor.h(45): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\main.h(28): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\main.c: 6 warnings, 0 errors
 compiling Thread_LED.c...
-Sources\Thread_LED.c(54): warning:  #1-D: last line of file ends without a newline
+Sources\Thread_LED.c(57): warning:  #1-D: last line of file ends without a newline
    *---------------------------------------------------------------------------*/
 Sources\Thread_LED.c: 1 warning, 0 errors
-compiling supporting_functions.c...
+compiling Thread_TempSensor.c...
+Sources\Thread_TempSensor.h(45): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\Thread_TempSensor.c: 1 warning, 0 errors
 compiling accelerometer.c...
 Sources\accelerometer.h(62): warning:  #1-D: last line of file ends without a newline
   #endif
@@ -60,32 +71,28 @@ Sources\accelerometer.c(84): warning:  #1-D: last line of file ends without a ne
   }
 Sources\accelerometer.c: 6 warnings, 0 errors
 compiling display_segment.c...
-Sources\display_segment.h(6): error:  #5: cannot open source input file "global_vars.h": No such file or directory
-  #include "global_vars.h"
-Sources\display_segment.c: 0 warnings, 1 error
+Sources\display_segment.h(39): warning:  #1295-D: Deprecated declaration reset - give arg types
+  void reset();
+Sources\display_segment.h(42): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\display_segment.c(277): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        if (temp >= 100.0){
+Sources\display_segment.c(288): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                if (temp >= 10.0){
+Sources\display_segment.c(354): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        if (angle >= 100.0){
+Sources\display_segment.c(365): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        else if(angle >= 10.0) {
+Sources\display_segment.c(349): warning:  #177-D: variable "displayValues" was declared but never referenced
+        int displayValues = 3;
+Sources\display_segment.c: 7 warnings, 0 errors
 compiling keypad.c...
-Sources\keypad.h(8): error:  #5: cannot open source input file "global_vars.h": No such file or directory
-  #include "global_vars.h"
-Sources\keypad.c: 0 warnings, 1 error
-compiling temp_sensor.c...
-Sources\temp_sensor.h(7): warning:  #1-D: last line of file ends without a newline
-  #include "math.h"
-Sources\temp_sensor.h(1): error:  #37: the #endif for this directive is missing
-  #ifndef TEMP_SENSOR_H
-Sources\temp_sensor.c(45): warning:  #223-D: function "Error_Handler" declared implicitly
-        if (HAL_ADC_Init(&ADC1_Handle) != HAL_OK) Error_Handler(ADC_INIT_FAIL);
-Sources\temp_sensor.c(45): error:  #20: identifier "ADC_INIT_FAIL" is undefined
-        if (HAL_ADC_Init(&ADC1_Handle) != HAL_OK) Error_Handler(ADC_INIT_FAIL);
-Sources\temp_sensor.c(68): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        tempValue  = (VSENSE*(3.3f/ 4096.0f) - (float)0.76 )/(float)0.025 + 25.0;                       
-Sources\temp_sensor.c(60): warning:  #177-D: variable "temp" was declared but never referenced
-        float VSENSE, temp;     
-Sources\temp_sensor.c(82): error:  #20: identifier "alarmCount" is undefined
-        if (alarmCount < 500){
-Sources\temp_sensor.c(109): warning:  #1-D: last line of file ends without a newline
-  }
-Sources\temp_sensor.c: 5 warnings, 3 errors
+Sources\keypad.h(53): warning:  #1-D: last line of file ends without a newline
+  #endif
+Sources\keypad.c: 1 warning, 0 errors
 assembling Kalmanfilter_asm.s...
+compiling supporting_functions.c...
+compiling fput_debug.c...
 compiling LIS3DSH.c...
 Accelerometer\src\LIS3DSH.c(369): warning:  #1035-D: single-precision operand implicitly converted to double-precision
           *out =(float)(
@@ -122,7 +129,9 @@ compiling stm32f4xx_hal_uart.c...
 compiling stm32f4xx_hal_usart.c...
 assembling startup_stm32f407xx.s...
 compiling system_stm32f4xx.c...
-".\Objects\Blinky.axf" - 6 Error(s), 18 Warning(s).
+linking...
+Program Size: Code=37444 RO-data=584 RW-data=112 ZI-data=7936  
+".\Objects\Blinky.axf" - 0 Error(s), 27 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -243,7 +252,6 @@ Package Vendor: Keil
 
    * Component: Keil::Device:STM32Cube HAL:USART:1.4.2
       Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_usart.c
-Target not created.
 </pre>
 </body>
 </html>

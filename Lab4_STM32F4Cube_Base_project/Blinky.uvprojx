@@ -418,14 +418,29 @@
               <FilePath>.\Sources\main.c</FilePath>
             </File>
             <File>
+              <FileName>main.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\main.h</FilePath>
+            </File>
+            <File>
+              <FileName>global_vars.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\global_vars.h</FilePath>
+            </File>
+            <File>
               <FileName>Thread_LED.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\Thread_LED.c</FilePath>
             </File>
             <File>
-              <FileName>supporting_functions.c</FileName>
+              <FileName>Thread_TempSensor.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Sources\supporting_functions.c</FilePath>
+              <FilePath>.\Sources\Thread_TempSensor.c</FilePath>
+            </File>
+            <File>
+              <FileName>Thread_TempSensor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\Thread_TempSensor.h</FilePath>
             </File>
             <File>
               <FileName>accelerometer.c</FileName>
@@ -433,19 +448,14 @@
               <FilePath>.\Sources\accelerometer.c</FilePath>
             </File>
             <File>
-              <FileName>display_segment.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\display_segment.c</FilePath>
-            </File>
-            <File>
-              <FileName>keypad.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\keypad.c</FilePath>
-            </File>
-            <File>
               <FileName>accelerometer.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Sources\accelerometer.h</FilePath>
+            </File>
+            <File>
+              <FileName>display_segment.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\display_segment.c</FilePath>
             </File>
             <File>
               <FileName>display_segment.h</FileName>
@@ -453,14 +463,14 @@
               <FilePath>.\Sources\display_segment.h</FilePath>
             </File>
             <File>
+              <FileName>keypad.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\keypad.c</FilePath>
+            </File>
+            <File>
               <FileName>keypad.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Sources\keypad.h</FilePath>
-            </File>
-            <File>
-              <FileName>temp_sensor.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\temp_sensor.c</FilePath>
             </File>
             <File>
               <FileName>Kalmanfilter_asm.s</FileName>
@@ -468,9 +478,14 @@
               <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
             </File>
             <File>
-              <FileName>temp_sensor.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\temp_sensor.h</FilePath>
+              <FileName>supporting_functions.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\supporting_functions.c</FilePath>
+            </File>
+            <File>
+              <FileName>fput_debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\fput_debug.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -904,14 +919,29 @@
               <FilePath>.\Sources\main.c</FilePath>
             </File>
             <File>
+              <FileName>main.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\main.h</FilePath>
+            </File>
+            <File>
+              <FileName>global_vars.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\global_vars.h</FilePath>
+            </File>
+            <File>
               <FileName>Thread_LED.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\Thread_LED.c</FilePath>
             </File>
             <File>
-              <FileName>supporting_functions.c</FileName>
+              <FileName>Thread_TempSensor.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Sources\supporting_functions.c</FilePath>
+              <FilePath>.\Sources\Thread_TempSensor.c</FilePath>
+            </File>
+            <File>
+              <FileName>Thread_TempSensor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\Thread_TempSensor.h</FilePath>
             </File>
             <File>
               <FileName>accelerometer.c</FileName>
@@ -919,19 +949,14 @@
               <FilePath>.\Sources\accelerometer.c</FilePath>
             </File>
             <File>
-              <FileName>display_segment.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\display_segment.c</FilePath>
-            </File>
-            <File>
-              <FileName>keypad.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\keypad.c</FilePath>
-            </File>
-            <File>
               <FileName>accelerometer.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Sources\accelerometer.h</FilePath>
+            </File>
+            <File>
+              <FileName>display_segment.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\display_segment.c</FilePath>
             </File>
             <File>
               <FileName>display_segment.h</FileName>
@@ -939,14 +964,14 @@
               <FilePath>.\Sources\display_segment.h</FilePath>
             </File>
             <File>
+              <FileName>keypad.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\keypad.c</FilePath>
+            </File>
+            <File>
               <FileName>keypad.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Sources\keypad.h</FilePath>
-            </File>
-            <File>
-              <FileName>temp_sensor.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\temp_sensor.c</FilePath>
             </File>
             <File>
               <FileName>Kalmanfilter_asm.s</FileName>
@@ -954,9 +979,14 @@
               <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
             </File>
             <File>
-              <FileName>temp_sensor.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\temp_sensor.h</FilePath>
+              <FileName>supporting_functions.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\supporting_functions.c</FilePath>
+            </File>
+            <File>
+              <FileName>fput_debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\fput_debug.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1390,14 +1420,29 @@
               <FilePath>.\Sources\main.c</FilePath>
             </File>
             <File>
+              <FileName>main.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\main.h</FilePath>
+            </File>
+            <File>
+              <FileName>global_vars.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\global_vars.h</FilePath>
+            </File>
+            <File>
               <FileName>Thread_LED.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\Thread_LED.c</FilePath>
             </File>
             <File>
-              <FileName>supporting_functions.c</FileName>
+              <FileName>Thread_TempSensor.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Sources\supporting_functions.c</FilePath>
+              <FilePath>.\Sources\Thread_TempSensor.c</FilePath>
+            </File>
+            <File>
+              <FileName>Thread_TempSensor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\Thread_TempSensor.h</FilePath>
             </File>
             <File>
               <FileName>accelerometer.c</FileName>
@@ -1405,19 +1450,14 @@
               <FilePath>.\Sources\accelerometer.c</FilePath>
             </File>
             <File>
-              <FileName>display_segment.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\display_segment.c</FilePath>
-            </File>
-            <File>
-              <FileName>keypad.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\keypad.c</FilePath>
-            </File>
-            <File>
               <FileName>accelerometer.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Sources\accelerometer.h</FilePath>
+            </File>
+            <File>
+              <FileName>display_segment.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\display_segment.c</FilePath>
             </File>
             <File>
               <FileName>display_segment.h</FileName>
@@ -1425,14 +1465,14 @@
               <FilePath>.\Sources\display_segment.h</FilePath>
             </File>
             <File>
+              <FileName>keypad.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\keypad.c</FilePath>
+            </File>
+            <File>
               <FileName>keypad.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Sources\keypad.h</FilePath>
-            </File>
-            <File>
-              <FileName>temp_sensor.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\temp_sensor.c</FilePath>
             </File>
             <File>
               <FileName>Kalmanfilter_asm.s</FileName>
@@ -1440,9 +1480,14 @@
               <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
             </File>
             <File>
-              <FileName>temp_sensor.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\temp_sensor.h</FilePath>
+              <FileName>supporting_functions.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\supporting_functions.c</FilePath>
+            </File>
+            <File>
+              <FileName>fput_debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\fput_debug.c</FilePath>
             </File>
           </Files>
         </Group>

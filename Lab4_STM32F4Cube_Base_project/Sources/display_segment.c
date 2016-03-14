@@ -61,34 +61,34 @@ void init_display(void){
 void selectDigit(int digit) {
 	
 	switch(digit) {
-		case 3:
+		case 4:
 			// Enable changes for first digit display
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);   // Digit 1
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); // Digit 2
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); // Digit 3
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); // Digit 4
 			break;
-		case 2:
+		case 3:
 			// Enable changes for second digit display
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); // Digit 1
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);   // Digit 2
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); // Digit 3
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); // Digit 4
 			break;
-		case 1:
+		case 2:
 			// Enable changes for third digit display
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); // Digit 1
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); // Digit 2
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_SET);   // Digit 3
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET); // Digit 4
 			break;
-//		case 1:
-//			// Enable changes for fourth digit display
-//			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); // Digit 1
-//			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); // Digit 2
-//			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); // Digit 3
-//			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);   // Digit 4
-//			break;
+		case 1:
+			// Enable changes for fourth digit display
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET); // Digit 1
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET); // Digit 2
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET); // Digit 3
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);   // Digit 4
+			break;
 
 		default:
 			break;
@@ -247,10 +247,103 @@ void lightNum(int num) {
 }
 
 
+/**  Causes the display of a temperature value
+   * @brief  Draws temperature on display
+	 * @param  Float of temperature to be displayed **/
+void draw_temperature(float temp){
+	
+	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:Degree, 5:E, 6:CCD3, 
+	   7:DP, 8:CCD4, 9:, 10:, 11:F, 12:, 13:C, 14:A, 15:G, 16:B}
+	
+		 Keypad Pinout {1:R1, 2:R2, 4:R4, 5:R5, 6:C1, 7:C2, 8:C3}
+	
+	   GPIO Pin Mapping for Display
+		 Segment Ctrls {CCD1:PC1, CCD2:PC2, CCD3:PC4, CCD4:PC5}
+	   DP & DC Ctrl  {DP:PC6, DC:PC7}
+		 Segments      {A:PB0, B:PB1, C:PB5, D:PB11, E:PB12, F:PB13, G:PB14} 
+	
+		 GPIO Pin Mapping for Keypad
+		 Rows: {R1:PD1, R2:PD2, R3:PD6 , R4:PD7}
+		 Columns: {C1:PD8, C2:PD9, C3:PD10}
+	
+		 Alarm LED : PD13
+	*/
+	
+	int displayValues, i;
+	int tempValue[4];
+	
+	// Determine how many values to display and what each individual value is
+	// Four digits to display (format xyz.a)
+	if (temp >= 100.0){
+		displayValues = 4;
+		tempValue[0] = temp/100;
+		tempValue[1] = temp/10 - tempValue[0]*10;
+		tempValue[2] = temp - tempValue[0]*100 - tempValue[1]*10;
+		tempValue[3] = (temp*10 - tempValue[0]*1000 - tempValue[1]*100 - tempValue[2]*10);
+	
+	}
+	else {
+		
+		// Three digits to display (format xy.z)
+		if (temp >= 10.0){
+				displayValues = 3;
+				tempValue[1] = temp/10;
+				tempValue[2] = temp - tempValue[1]*10;
+				tempValue[3] = (temp*10 - tempValue[1]*100 - tempValue[2]*10);	
+		}
+		
+		// Two digits to display (format x.y or 0.x)
+		else {
+				displayValues = 2;
+				tempValue[2] = temp;
+				tempValue[3] = (temp*10 - tempValue[2]*10);
+		}
+	}
+	
+	for(i=4; i>0; i--) {
+		
+		selectDigit(i);
+		reset();
+		 
+		// Light proper number on display, lighting 10 indicates blank display value
+		if (i > displayValues) {
+			lightNum(10);
+		}
+		else {
+			// Set decimal point on third value
+			if (i == 2) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			else HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+			
+			lightNum(tempValue[4-i]);	
+			
+		}
+	}
+		
+		osDelay(1);
+}	
+
+
 /**  Causes the display of an angle value
    * @brief  Draws angle on display
-	 * @param  Angle to be displayed **/
+	 * @param  Float of angle to be displayed **/
 void draw_angle(float angle) {
+	
+	/* 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:Degree, 5:E, 6:CCD3, 
+	   7:DP, 8:CCD4, 9:, 10:, 11:F, 12:, 13:C, 14:A, 15:G, 16:B}
+	
+		 Keypad Pinout {1:R1, 2:R2, 4:R4, 5:R5, 6:C1, 7:C2, 8:C3}
+	
+	   GPIO Pin Mapping for Display
+		 Segment Ctrls {CCD1:PC1, CCD2:PC2, CCD3:PC4, CCD4:PC5}
+	   DP & DC Ctrl  {DP:PC6, DC:PC7}
+		 Segments      {A:PB0, B:PB1, C:PB5, D:PB11, E:PB12, F:PB13, G:PB14} 
+	
+		 GPIO Pin Mapping for Keypad
+		 Rows: {R1:PD1, R2:PD2, R3:PD6 , R4:PD7}
+		 Columns: {C1:PD8, C2:PD9, C3:PD10}
+	
+		 Alarm LED : PD13
+	*/
 	
 	int i, decimalPos;
 	int displayValues = 3;
@@ -310,47 +403,15 @@ void draw_angle(float angle) {
 		}
 			
 		// Interrupts at 500 HZ, delay of 4 ms
-		Delay(2);
+		osDelay(2);
 		
 	}
 }
 
 
-/**  Causes display of tilt-down instruction animations
-   * @brief  Displays letter d for tilt down **/
-void draw_d(void) {
-	
-	selectDigit(1);
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); //a
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //e
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET); //f
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET); //g
-	
-}
-
-
-/**  Causes display of tilt-up instruction animations
-   * @brief  Displays letter u for tilt up **/
-void draw_u(void) {
-	
-	selectDigit(1);
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); //a
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET); //b
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET); //c
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET); //d
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET); //e
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET); //f
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET); //g
-	
-}
-
-
 /**  Resets all display pins
    * @brief  "" **/
-void reset(void) {
+void reset() {
 	
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET); //a
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET); //b
@@ -366,14 +427,3 @@ void reset(void) {
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET); //degree
 	
 }
-
-
-/**  Uses timer 3 to generate delay for display
-   * @brief  Allows for software delay to be used for display purposes **/
-void Delay(uint32_t time)
-{
-	
-  TimmingDelay = time;
-  while(TimmingDelay !=0);
-	
-}  

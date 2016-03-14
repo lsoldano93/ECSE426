@@ -8,18 +8,7 @@
   ******************************************************************************
   */
 
-#include "stm32f4xx_hal.h"              // Keil::Device:STM32Cube HAL:Common
-#include "cmsis_os.h"                   // ARM::CMSIS:RTOS:Keil RTX
-#include "RTE_Components.h"             // Component selection
-#include "accelerometer.h"
-#include "keypad.h"
-#include "temp_sensor.h"
-#include "display_segment.h"
-
-extern void initializeLED_IO			(void);
-extern void start_Thread_LED			(void);
-extern void Thread_LED(void const *argument);
-extern osThreadId tid_Thread_LED;
+#include "main.h"
 
 /**
 	These lines are mandatory to make CMSIS-RTOS RTX work with te new Cube HAL
@@ -68,21 +57,139 @@ void SystemClock_Config(void) {
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
 }
 
+
+/**  Causes the display of a temperature or angle value
+   * @brief  Will show the proper float on the display and will flash if temperature alarm sounded
+	 * @param  Float of temperature/angle to be displayed
+	 * @param	 Boolean that is false for temperature display and true for angle display
+   * @param	 Boolean that indicates whether or not temperature alarm is sounding **/
+void display(float displayValue, uint8_t displayBool, uint8_t alarmBool){
+	
+	uint8_t i;
+	
+	// Reset all pins and set delay to show noticeable blink if alarm active
+	if (alarmBool){
+		for(i=0; i<4; i++){
+			selectDigit(i);
+			reset();
+		}
+		
+		osDelay(100);
+	}
+	
+	if (displayBool) draw_angle(displayValue);
+	else draw_temperature(displayValue);
+	
+	return;
+}
+
+
+/**  Timer3 initialization function
+   * @brief  Function to initialize timer 3 **/
+void init_TIM3(void) {
+	
+	TIM_Base_InitTypeDef init_TIM;
+	
+	// Enable clock for TIM3 
+	__HAL_RCC_TIM3_CLK_ENABLE();
+	
+	// Desired Rate = ClockFrequency / (prescaler * period)
+	// Rate = 1000Hz, frequency = 42MHz																		 TODO: FIX to 500 HZ
+	// need to setup period and prescaler
+	// set rate to 500Hz
+	
+	// Initialize timer 3 initialization struct 
+	init_TIM.Period = 42;			 								// Period is in MHz
+	init_TIM.Prescaler = 2000;
+	init_TIM.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	init_TIM.CounterMode = TIM_COUNTERMODE_UP;
+	
+	// Initialize timer 3 handle struct
+	handle_tim3.Instance = TIM3;
+	handle_tim3.Init = init_TIM;
+	handle_tim3.Channel = HAL_TIM_ACTIVE_CHANNEL_CLEARED;
+	handle_tim3.Lock = HAL_UNLOCKED;
+	handle_tim3.State = HAL_TIM_STATE_READY;
+
+	// Initialize timer 3 handle and enable interrupts
+	HAL_TIM_Base_MspInit(&handle_tim3);
+	HAL_TIM_Base_Init(&handle_tim3);
+	HAL_TIM_Base_Start_IT(&handle_tim3);
+		
+	// Configure NVIC 
+	HAL_NVIC_EnableIRQ(TIM3_IRQn);
+	HAL_NVIC_SetPriority(TIM3_IRQn, 0,0);
+	//HAL_NVIC_ClearPendingIRQ(TIM3_IRQn);
+	
+}
+
 /**
-  * Main function
+  * @brief  This function handles accelerometer interrupt requests
+  * @param  None
+  * @retval None
   */
+//void EXTI0_IRQHandler(void){
+//	
+//	// Listen to pin 0
+//	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+//	
+//	// Flag for interrupt
+//	ready_to_update_accelerometer = 1;
+
+//}
+
+/**
+  * @}
+  */ 
+
+void TIM3_IRQHandler(void) {
+	
+	HAL_TIM_IRQHandler(&handle_tim3);
+
+	tim3_flag = 1;
+
+	if(TimmingDelay !=0) {
+			TimmingDelay --;
+	}
+	
+}
+
+
+/**  Runs user interface system
+   * @brief  Initializes threads and peripherals to maintian a RTOS for the user **/
 int main (void) {
-
+	
+	
+	
   osKernelInitialize();                     /* initialize CMSIS-RTOS          */
-
   HAL_Init();                               /* Initialize the HAL Library     */
-
   SystemClock_Config();                     /* Configure the System Clock     */
-
+	
+	printf("Beginning Program\n");
+	
 	/* User codes goes here*/
-  initializeLED_IO();                       /* Initialize LED GPIO Buttons    */
-  start_Thread_LED();                       /* Create LED thread              */
+	init_TIM3();
+	initialize_LED_IO();                       /* Initialize LED GPIO Buttons    */
+
+	start_Thread_LED();					 /* Create LED thread              */	
+  
+	initialize_Temp_Thread();
+	
+	start_Thread_TempSensor();
+	
+	// TODO: Add accelerometer thread initialization and start
+	
+	// TODO: Add key press thread initialization and start
+	
+	// TODO: Add display thread initialization and start
+	//init_display();
+
 	/* User codes ends here*/
   
 	osKernelStart();                          /* start thread execution         */
+	
+
+	
+
+	
 }
