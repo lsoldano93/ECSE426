@@ -2,15 +2,12 @@
 #define KEYPAD_H
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdint.h>
-#include "cmsis_os.h"
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_gpio.h"
 #include "global_vars.h"
+#include "stm32f4xx_hal_gpio.h"
 
 #define ROWS 4
 #define COLS 3
-#define DEBOUNCE_DELAY 25 // 50 ms
+#define DEBOUNCE_DELAY 25 // 25 ms
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/

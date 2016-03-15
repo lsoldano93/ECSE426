@@ -1,7 +1,14 @@
 #ifndef GLOBAL_VARS_H
 #define GLOBAL_VARS_H
 
+#include <stdio.h>
+#include <stdint.h>
 #include "cmsis_os.h"
+#include "stm32f4xx_hal.h"
+
+#define THREAD_RED_LIGHT 0  	 // Signal for thread to wait
+#define THREAD_GREEN_LIGHT 2   // Signal for thread to execute
+#define THREAD_TIMEOUT 1000     // Thread timeout value in milliseconds
 
 /* Public variables ----------------------------------------------------------*/
 
@@ -11,18 +18,16 @@ extern uint8_t tilt_state;
 
 // Mutexes
 extern osMutexId temperatureMutex;
+extern osMutexId accelerometerMutex;
+extern osMutexId tiltAnglesMutex;
 
 // Shared variables
 extern float temperatureValue;
+extern float accelerometer_out[3];
+extern float rollValue, pitchValue;
 
-//tim3
-extern uint8_t tim3_flag;
-extern uint16_t tim3_ticks;
-extern uint32_t TimmingDelay;
-
-// Timer handler
+// Timer 3 handler
 extern TIM_HandleTypeDef handle_tim3;
-
 
 /* @brief Structure for the Kalman filter  */ 
 typedef struct kalman_t{

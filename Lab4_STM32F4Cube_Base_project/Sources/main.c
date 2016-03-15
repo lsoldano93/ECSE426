@@ -64,25 +64,25 @@ void SystemClock_Config(void) {
 	 * @param  Float of temperature/angle to be displayed
 	 * @param	 Boolean that is false for temperature display and true for angle display
    * @param	 Boolean that indicates whether or not temperature alarm is sounding **/
-void display(float displayValue, uint8_t displayBool, uint8_t alarmBool){
-	
-	uint8_t i;
-	
-	// Reset all pins and set delay to show noticeable blink if alarm active
-	if (alarmBool){
-		for(i=0; i<4; i++){
-			selectDigit(i);
-			reset();
-		}
-		
-		osDelay(100);
-	}
-	
-	if (displayBool) draw_angle(displayValue);
-	else draw_temperature(displayValue);
-	
-	return;
-}
+//void display(float displayValue, uint8_t displayBool, uint8_t alarmBool){
+//	
+//	uint8_t i;
+//	
+//	// Reset all pins and set delay to show noticeable blink if alarm active
+//	if (alarmBool){
+//		for(i=0; i<4; i++){
+//			selectDigit(i);
+//			reset();
+//		}
+//		
+//		osDelay(100);
+//	}
+//	
+//	if (displayBool) draw_angle(displayValue);
+//	else draw_temperature(displayValue);
+//	
+//	return;
+//}
 
 
 /**  Timer3 initialization function
@@ -94,14 +94,13 @@ void init_TIM3(void) {
 	// Enable clock for TIM3 
 	__HAL_RCC_TIM3_CLK_ENABLE();
 	
-	// Desired Rate = ClockFrequency / (prescaler * period)
-	// Rate = 1000Hz, frequency = 42MHz																		 TODO: FIX to 500 HZ
-	// need to setup period and prescaler
-	// set rate to 500Hz
-	
-	// Initialize timer 3 initialization struct 
-	init_TIM.Period = 42;			 								// Period is in MHz
-	init_TIM.Prescaler = 2000;
+	/* Desired Rate = ClockFrequency / (prescaler * period)
+		 Rate = 1000Hz, frequency = 84MHz																		
+		 need to setup period and prescaler
+		 set rate to 500Hz
+		 Initialize timer 3 initialization struct     */
+	init_TIM.Period = 83;  // Period is in MHz
+	init_TIM.Prescaler = 999;
 	init_TIM.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	init_TIM.CounterMode = TIM_COUNTERMODE_UP;
 	
@@ -120,84 +119,109 @@ void init_TIM3(void) {
 	// Configure NVIC 
 	HAL_NVIC_EnableIRQ(TIM3_IRQn);
 	HAL_NVIC_SetPriority(TIM3_IRQn, 0,0);
-	//HAL_NVIC_ClearPendingIRQ(TIM3_IRQn);
 	
 }
+
 
 /**
   * @brief  This function handles accelerometer interrupt requests
   * @param  None
   * @retval None
   */
-//void EXTI0_IRQHandler(void){
-//	
-//	// Listen to pin 0
-//	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
-//	
-//	// Flag for interrupt
-//	ready_to_update_accelerometer = 1;
-
-//}
-
-/**
-  * @}
-  */ 
-
-void TIM3_IRQHandler(void) {
-	
-	HAL_TIM_IRQHandler(&handle_tim3);
-
-	tim3_flag = 1;
-
-	if(TimmingDelay !=0) {
-			TimmingDelay --;
-	}
+void EXTI0_IRQHandler(void){
+	// Handle external interrupts on pin 0
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
 	
 }
 
 
+/**
+  * @}
+  */ 
+void TIM3_IRQHandler(void) {
+	// Handle interrupts deriving from timer 3
+	HAL_TIM_IRQHandler(&handle_tim3);
+	
+}
 
+
+/**
+  * @brief  Input Capture callback in non blocking mode 
+  * @param  htim: pointer to a TIM_HandleTypeDef structure that contains
+  *                the configuration information for TIM module.
+  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	
+	/* Prevent unused argument(s) compilation warning */
+  __IO uint32_t tmpreg = 0x00;
+  UNUSED(tmpreg); 
+	
+	/* If callback regards GPIO pin associated with external accelerometer interrupt, 
+		 read accelerometer to output when available and signal accelerometer thread to execute */
+	if(GPIO_Pin == GPIO_PIN_0) {
+		osMutexWait(accelerometerMutex, (uint32_t) THREAD_TIMEOUT);
+		LIS3DSH_ReadACC(accelerometer_out);
+		osMutexRelease(accelerometerMutex);
+		osSignalSet(tid_Thread_Accelerometer, (int32_t) THREAD_GREEN_LIGHT);
+	}	
+	
+}
+
+
+/**
+  * @brief  Period elapsed callback in non blocking mode 
+  * @param  htim: pointer to a TIM_HandleTypeDef structure that contains
+  *                the configuration information for TIM module.
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(htim);
+  
+	// Only perform callback if proper timer is calling it
+	if (htim == &handle_tim3){
+		
+		tim3_ticks++;
+		
+		if (tim3_ticks > 8){
+			// Send signal to temperature sensor to take in a new reading
+			osSignalSet(tid_Thread_TempSensor, (int32_t) THREAD_GREEN_LIGHT);
+			tim3_ticks = 0;
+		}
+	}
+	
+}
 
 
 /**  Runs user interface system
    * @brief  Initializes threads and peripherals to maintian a RTOS for the user **/
 int main (void) {
 	
-	
-	
-  osKernelInitialize();                     /* initialize CMSIS-RTOS          */
+  osKernelInitialize();                     /* Initialize CMSIS-RTOS          */
   HAL_Init();                               /* Initialize the HAL Library     */
   SystemClock_Config();                     /* Configure the System Clock     */
+	
+	// Initialize flags and counters
+	tim3_ticks = 0;
 	
 	printf("Beginning Program\n");
 	
 	/* User codes goes here*/
-	init_TIM3();
-	initialize_LED_IO();                       /* Initialize LED GPIO Buttons    */
-
-	start_Thread_LED();					 /* Create LED thread              */	
+	init_TIM3();															/* Initialize timer 3 				     	*/
   
-	//initialize and configure temperature ADC
-	ADC_config();
+	ADC_config();														  /* Initialize temp sensor ADC     	*/
+	start_Thread_TempSensor(); 								/* Start temp sensor thread  				*/
 	
-	start_Thread_TempSensor();
+	Accelerometer_config();										/* Initialize accelerometer         */
+	start_Thread_Accelerometer();							/* Start accelerometer thread       */
 	
-	// TODO: Add accelerometer thread initialization and start
-	
-	init_accelerometer();
-	start_Thread_Accelerometer();
-	
-	// TODO: Add key press thread initialization and start
-	
-	// TODO: Add display thread initialization and start
-	//init_display();
+	UserInterface_config();										/* Initialize display and keypad    */
+	start_Thread_UserInterface();				  		/* Start UI thread                  */
 
 	/* User codes ends here*/
   
-	osKernelStart();                          /* start thread execution         */
-	
-
-	
-
+	osKernelStart();                          /* Start thread execution         */
 	
 }
+

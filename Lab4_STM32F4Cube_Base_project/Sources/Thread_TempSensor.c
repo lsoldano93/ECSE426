@@ -4,20 +4,21 @@
 float temperatureValue;
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef ADC1_Handle;
+
 osThreadId tid_Thread_TempSensor;   
+ADC_HandleTypeDef ADC1_Handle;
 kalman_t kalman_temperature;
 const void* temperatureMutexPtr;
 
-osThreadDef(Thread_TempSensor, osPriorityNormal, 1, NULL); // TODO: Can we have multiple priorities of 0
+osThreadDef(Thread_TempSensor, osPriorityNormal, 1, NULL); 
 
 /**  Initiates temperature sensor thread
    * @brief  Builds thread and starts it
-   * @retval Temperature float in celcius
+   * @retval Integer inidicating failure or success of thread initiation
    */
 int start_Thread_TempSensor (void) {
 
-  tid_Thread_TempSensor = osThreadCreate(osThread(Thread_TempSensor ), NULL); // Start LED_Thread
+  tid_Thread_TempSensor = osThreadCreate(osThread(Thread_TempSensor ), NULL); 
   if (!tid_Thread_TempSensor){
 		printf("Error starting temperature sensor thread!");
 		return(-1); 
@@ -25,19 +26,25 @@ int start_Thread_TempSensor (void) {
   return(0);
 }
 
-/**  Get temperature
+/**  Runs temperature sensor thread which updates temperature value for display
    * @brief  Obtains temperature voltage readout from ADC1 Channel 16
-   * @param  None
-   * @retval Temperature float in celcius
    */
 void Thread_TempSensor (void const *argument){
 	
+	osEvent Status_TempSensor;
+	
+	// Update temperature values when signaled to do so, clear said signal after execution
 	while(1){
-			//use tim3 timer instead
-			//need to use osWait
-//			osDelay(100);
-			Delay(100);
-			updateTemp();
+		
+		Status_TempSensor = osSignalWait((int32_t) THREAD_GREEN_LIGHT, (uint32_t) THREAD_TIMEOUT);
+		//updateTemp();
+		
+		/* TODO: Remove this code once ADC is configured properly */
+		osMutexWait(temperatureMutex, (uint32_t) THREAD_TIMEOUT);
+		temperatureValue  = 25.0;	
+		osMutexRelease(temperatureMutex);	
+		/*                                                        */
+		
 	}
 }
 	
@@ -52,7 +59,7 @@ void updateTemp(void) {
 	
 	// Obtain temperature voltage value from ADC
 	//need to get poll working
-	HAL_ADC_PollForConversion(&ADC1_Handle,10);
+	HAL_ADC_PollForConversion(&ADC1_Handle, (uint32_t) THREAD_TIMEOUT);
 	VSENSE = HAL_ADC_GetValue(&ADC1_Handle); 
 	
 	// Filter raw temperature sensor values
@@ -64,30 +71,18 @@ void updateTemp(void) {
 	   Voltage at 25C is 760mV
 	   Avg slop is 25mV/1C 
 	   --------------------------------------------------------- */
-	osMutexWait(temperatureMutex, 10);
+	osMutexWait(temperatureMutex, (uint32_t) THREAD_TIMEOUT);
 	temperatureValue  = (VSENSE*(3.0f/ 4096.0f) - 0.76f)/0.025f + 25.0f;	
 	printf("Temperature Value: %f\n", temperatureValue);
 	osMutexRelease(temperatureMutex);	
-
-	return;
 	
 }
-
-
-/**  Uses timer 3 to generate delay for display
-   * @brief  Allows for software delay to be used for display purposes **/
-void Delay(uint32_t time)
-{
-	
-  TimmingDelay = time;
-  while(TimmingDelay !=0);
-	
-}  
+ 
 
 /**  ADC Configuration
    * @brief  Configures ADC1 Channel 16 so that temperature values can be read
    */
-void ADC_config(void) {
+void ADC_config(void) {  // TODO: Make this configuration proper so that it actually works
 
 	ADC_ChannelConfTypeDef ADC1_ch16;
 	

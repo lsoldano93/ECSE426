@@ -1,7 +1,6 @@
 
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdio.h>
 #include "keypad.h"
 
 uint8_t key_state;
@@ -159,7 +158,7 @@ int get_key(void) {
 		// Wait state
 		while(keypad_map[get_row()][get_column()] == key){ 
 			i++;
-			osDelay(25); 
+			osDelay(DEBOUNCE_DELAY); 
 		}
 		
 		// Key held long enough and isn't noise

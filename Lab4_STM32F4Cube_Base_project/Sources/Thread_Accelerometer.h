@@ -3,19 +3,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
-#include "stm32f4xx_hal.h"
-#include "cmsis_os.h"   
+#include "global_vars.h" 
 #include "lis3dsh.h"
-#include "global_vars.h"
 #include "math.h"
-
-/* Private typedef -----------------------------------------------------------*/
-
-typedef struct {
-	float x; 
-	float y; 
-	float z;
-} accelerometer_values;
 
 #define PI 3.14159265358
 #define ACC11 0.9523
@@ -32,22 +22,58 @@ typedef struct {
 #define ACC30 -0.0328 
 #define DEGREES(x) (180.0*x/PI)
 
-/* Private variables ---------------------------------------------------------*/
-//Might want to make these two global
+// TODO: Determine these values
+#define accelKalman_x_q 0.1
+#define accelKalman_x_r 2.0
+#define accelKalman_x_x 25.0
+#define accelKalman_x_p 0.0
+#define accelKalman_x_k 0.0
 
-osThreadId tid_Thread_Accelerometer;
-float accelerometer_out[3];
-accelerometer_values accel;
-float accel_x, accel_y, accel_z;
-float roll, pitch;
-kalman_t kalmanX, kalmanY, kalmanZ;
+// TODO: Determine these values
+#define accelKalman_y_q 0.1
+#define accelKalman_y_r 2.0
+#define accelKalman_y_x 25.0
+#define accelKalman_y_p 0.0
+#define accelKalman_y_k 0.0
+
+// TODO: Determine these values
+#define accelKalman_z_q 0.1
+#define accelKalman_z_r 2.0
+#define accelKalman_z_x 25.0
+#define accelKalman_z_p 0.0
+#define accelKalman_z_k 0.0
+
+/* Private typedef -----------------------------------------------------------*/
+
+typedef struct {
+	float x; 
+	float y; 
+	float z;
+} accelerometer_values;
+
+/* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/ 
+
+/**  Initiates accelerometer thread
+   * @brief  Builds thread and starts it
+	 * @retval Integer inidicating failure or success of thread initiation
+   */
 int start_Thread_Accelerometer (void);
 
+/**  Accelerometer bread and butter
+   * @brief  Updates x, y, z parameters of accelerometer by reading from MEMs device
+	 * @param  Locations where updated values will be stored **/
 void Thread_Accelerometer (void const *argument);
 
-void accelerometer_mode(void) {
-	
+/**  Accelerometer bread and butter
+   * @brief  Updates x, y, z parameters of accelerometer by reading from MEMs device
+	 * @param  Locations where updated values will be stored **/
+void accelerometer_mode(void);
+
+/**  Configure kalman filtering structures for x,y,z values of accelerometer
+   * @brief  Gives pre-defined values to new kalman structs  **/
+void config_accelerometer_kalman(void);
+
 /**  Accelerometer bread and butter
    * @brief  Updates x, y, z parameters of accelerometer by reading from MEMs device
 	 * @param  Locations where updated values will be stored **/
@@ -68,11 +94,9 @@ float calc_roll_angle(void);
    * @retval Returns yaw angle **/
 float calc_yaw_angle(void);
 
-void config_accelerometer_kalman(void);
-
 /**  Initialize accelerometer
    * @brief  Initializes accelerometer for use **/
-void init_accelerometer(void);
+void Accelerometer_config(void);
 
 
 

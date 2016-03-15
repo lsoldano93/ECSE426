@@ -1,8 +1,7 @@
 
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_hal.h"
-#include "display_segment.h"
+#include "Thread_SegmentDisplay.h"
 
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/

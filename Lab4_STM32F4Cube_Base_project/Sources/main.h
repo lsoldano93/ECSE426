@@ -1,28 +1,47 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <stdio.h>
-#include "stm32f4xx_hal.h"              // Keil::Device:STM32Cube HAL:Common
-#include "cmsis_os.h"                   // ARM::CMSIS:RTOS:Keil RTX
-#include "RTE_Components.h"             // Component selection
-#include "accelerometer.h"
-#include "keypad.h"
-#include "display_segment.h"
-#include "Thread_TempSensor.h"
 #include "global_vars.h"
+#include "RTE_Components.h"             // Component selection
+#include "Thread_TempSensor.h"
+#include "Thread_Accelerometer.h"
+#include "Thread_UserInterface.h"
 
-extern void initialize_LED_IO (void);
-extern void start_Thread_LED (void);
-extern void Thread_LED(void const *argument);
 extern osThreadId tid_Thread_LED;
 extern osThreadId tid_Thread_TempSensor; 
-void TIM3_IRQHandler(void);
-void Delay(uint32_t time);
+extern osThreadId tid_Thread_Accelerometer;
+extern osThreadId tid_Thread_UserInterface;
 
 osMutexId temperatureMutex;
-uint8_t tim3_flag;
-uint16_t tim3_ticks;
+osMutexId accelerometerMutex;
+osMutexId tiltAnglesMutex;
 TIM_HandleTypeDef handle_tim3;
-uint32_t TimmingDelay;
-float accelerometer_out[3];
+
+uint8_t tim3_ticks;
+
+void SystemClock_Config(void);
+
+/**  Timer3 initialization function
+   * @brief  Function to initialize timer 3 **/
+void init_TIM3(void);
+
+/**
+  * @brief  This function handles accelerometer interrupt requests
+  * @param  None
+  * @retval None
+  */
+//void EXTI0_IRQHandler(void);
+
+/**
+  * @}
+  */ 
+void TIM3_IRQHandler(void);
+
+/**  Runs user interface system
+   * @brief  Initializes threads and peripherals to maintian a RTOS for the user **/
+int main (void);
+
+
+
+
 #endif

@@ -1,19 +1,27 @@
+
 /* Includes ------------------------------------------------------------------*/
-#include "accelerometer.h"
+#include "Thread_Accelerometer.h"
 
 /* Private variables ---------------------------------------------------------*/
 
+osThreadId tid_Thread_Accelerometer;
+float accelerometer_out[3];
+accelerometer_values accel;
+float accel_x, accel_y, accel_z;
+float rollValue, pitchValue;
+kalman_t kalmanX, kalmanY, kalmanZ;
+const void *accelerometerMutexPtr, *tiltAnglesMutexPtr;
+
 /* Private functions ---------------------------------------------------------*/
 
-osThreadDef(Thread_Accelerometer, osPriorityNormal, 1, NULL); // TODO: Can we have multiple priorities of 0
+osThreadDef(Thread_Accelerometer, osPriorityNormal, 1, NULL); 
 
-/**  Initiates temperature sensor thread
+/**  Initiates accelerometer thread
    * @brief  Builds thread and starts it
-   * @retval Temperature float in celcius
+	 * @retval Integer inidicating failure or success of thread initiation
    */
-	 
 int start_Thread_Accelerometer (void) {
-  tid_Thread_Accelerometer = osThreadCreate(osThread(Thread_Accelerometer ), NULL); // Start acclerometer thread
+  tid_Thread_Accelerometer = osThreadCreate(osThread(Thread_Accelerometer), NULL); 
   if (!tid_Thread_Accelerometer){
 		printf("Error starting acclerometer thread!");
 		return(-1); 
@@ -21,65 +29,74 @@ int start_Thread_Accelerometer (void) {
   return(0);
 }
 
+/**  Accelerometer bread and butter
+   * @brief  Updates x, y, z parameters of accelerometer by reading from MEMs device
+	 * @param  Locations where updated values will be stored **/
 void Thread_Accelerometer (void const *argument){
 	
+	osEvent Status_Accelerometer;
+	
+	// Update accelerometer values when signaled to do so, clear said signal after execution
 	while(1){
+		
+		Status_Accelerometer = osSignalWait((int32_t) THREAD_GREEN_LIGHT, (uint32_t) THREAD_TIMEOUT);
 		accelerometer_mode();
+		
 	}
+	
 }
 
+
+/**  Accelerometer bread and butter
+   * @brief  Updates x, y, z parameters of accelerometer by reading from MEMs device
+	 * @param  Locations where updated values will be stored **/
 void accelerometer_mode(void) {
-	//add in mutex wait here
+	
+	// Wait for permission to access accelerometer_out and then calculate real values
+	osMutexWait(accelerometerMutex, (uint32_t) THREAD_TIMEOUT);
 	update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
-			
-	roll = calc_roll_angle();
-	pitch = calc_pitch_angle();
-			
+	osMutexRelease(accelerometerMutex);
+	
+	// Filter updated accelerometer values
+	Kalmanfilter_asm(&accel.x, &accel.x, 1, &kalmanX);	
+	Kalmanfilter_asm(&accel.y, &accel.y, 1, &kalmanY);	
+	Kalmanfilter_asm(&accel.z, &accel.z, 1, &kalmanZ);	
+	
+	// Calculate tilt angles when permission to resources granted
+	osMutexWait(tiltAnglesMutex, (uint32_t) THREAD_TIMEOUT);
+	rollValue = calc_roll_angle();
+	pitchValue = calc_pitch_angle();
+	osMutexRelease(tiltAnglesMutex);
+	
 }
 
-/**
-  * @brief  Input Capture callback in non blocking mode 
-  * @param  htim: pointer to a TIM_HandleTypeDef structure that contains
-  *                the configuration information for TIM module.
-  */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	
-	/* Prevent unused argument(s) compilation warning */
-  __IO uint32_t tmpreg = 0x00;
-  UNUSED(tmpreg); 
-	
-	// If callback regards GPIO pin associated with external accel interrupt, read accel
-	if(GPIO_Pin == GPIO_PIN_0) {
-		LIS3DSH_ReadACC(accelerometer_out);
-	}	
-}
 
+/**  Configure kalman filtering structures for x,y,z values of accelerometer
+   * @brief  Gives pre-defined values to new kalman structs  **/
 void config_accelerometer_kalman(void) {
 	
-	//Configure kalman filter for x
-	kalmanX.q = 0.02;
-	kalmanX.r = 4.5;
-	kalmanX.x = 90.0;
-	kalmanX.p = 0.0;
-	kalmanX.k = 0.0;
+	// Configure kalman filter for x
+	kalmanX.q = accelKalman_x_q;
+	kalmanX.r = accelKalman_x_r;
+	kalmanX.x = accelKalman_x_x;
+	kalmanX.p = accelKalman_x_p;
+	kalmanX.k = accelKalman_x_k;
 		
-	//Configure kalman filter for y
-	kalmanY.q = 0.02;
-	kalmanY.r = 4.5;
-	kalmanY.x = 90.0;
-	kalmanY.p = 0.0;
-	kalmanY.k = 0.0;
+	// Configure kalman filter for y
+	kalmanY.q = accelKalman_y_q;
+	kalmanY.r = accelKalman_y_r;
+	kalmanY.x = accelKalman_y_x;
+	kalmanY.p = accelKalman_y_p;
+	kalmanY.k = accelKalman_y_k;
 	
-	
-	//Configure kalman filter for z
-	kalmanZ.q = 0.02;
-	kalmanZ.r = 4.5;
-	kalmanZ.x = 90.0;
-	kalmanZ.p = 0.0;
-	kalmanZ.k = 0.0;
+	// Configure kalman filter for z
+	kalmanZ.q = accelKalman_z_q;
+	kalmanZ.r = accelKalman_z_r;
+	kalmanZ.x = accelKalman_z_x;
+	kalmanZ.p = accelKalman_z_p;
+	kalmanZ.k = accelKalman_z_k;
 	
 }
-
 
 
 /**  Accelerometer bread and butter
@@ -90,10 +107,6 @@ void update_accel_values(float Ax, float Ay, float Az) {
 	accel.y = Ax*ACC21 + Ay*ACC22 + Az*ACC23 + ACC20;
 	accel.z = Ax*ACC31 + Ay*ACC32 + Az*ACC33 + ACC30;
 	
-	
-	Kalmanfilter_asm(&accel.x, &accel.x, 1, &kalmanX);	
-	Kalmanfilter_asm(&accel.y, &accel.y, 1, &kalmanY);	
-	Kalmanfilter_asm(&accel.z, &accel.z, 1, &kalmanZ);	
 }
 
 /**  Calculates pitch angle
@@ -109,6 +122,7 @@ float calc_pitch_angle(void){
    * @retval Returns roll angle **/
 float calc_roll_angle(void){	
 	return 90.0 - DEGREES(atan(accel.x/sqrt((accel.y*accel.y)+(accel.z*accel.z))));
+	
 }
 
 /**  Calculates yaw angle
@@ -116,11 +130,12 @@ float calc_roll_angle(void){
    * @retval Returns yaw angle **/
 float calc_yaw_angle(void){
 	return 90.0 - DEGREES(acos(accel.z/1000.0));
+	
 }
 
 /**  Initialize accelerometer
    * @brief  Initializes accelerometer for use **/
-void init_accelerometer(void) {
+void Accelerometer_config(void) {
 	
 	//Configure LIS3DSH accelermoter sensor
 	LIS3DSH_InitTypeDef init;
@@ -155,9 +170,13 @@ void init_accelerometer(void) {
 	
 	// Enable external interrupt line 0
 	HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-	HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+	HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 1);
 	HAL_NVIC_ClearPendingIRQ(EXTI0_IRQn);
 	LIS3DSH_DataReadyInterruptConfig(&init_it); 
+	
+	// Initialize accelerometer mutexs
+	accelerometerMutex = osMutexCreate(accelerometerMutexPtr);
+	tiltAnglesMutex = osMutexCreate(tiltAnglesMutexPtr);
 	
 	//initialize kalman filters for the accelerometer
 	config_accelerometer_kalman();
