@@ -26,112 +26,86 @@ Project File Date:  03/14/2016
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.05 update 2 (build 169)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
-Rebuild target 'Lab4'
+Build target 'Lab4'
 compiling main.c...
-Sources\accelerometer.h(62): warning:  #1-D: last line of file ends without a newline
+Sources\accelerometer.h(79): warning:  #1-D: last line of file ends without a newline
   #endif
 Sources\keypad.h(53): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\display_segment.h(39): warning:  #1295-D: Deprecated declaration reset - give arg types
-  void reset();
 Sources\display_segment.h(42): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\Thread_TempSensor.h(45): warning:  #1-D: last line of file ends without a newline
+Sources\Thread_TempSensor.h(29): warning:  #1-D: last line of file ends without a newline
   #endif
 Sources\main.h(28): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\main.c: 6 warnings, 0 errors
-compiling Thread_LED.c...
-Sources\Thread_LED.c(57): warning:  #1-D: last line of file ends without a newline
-   *---------------------------------------------------------------------------*/
-Sources\Thread_LED.c: 1 warning, 0 errors
-compiling Thread_TempSensor.c...
-Sources\Thread_TempSensor.h(45): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\Thread_TempSensor.c: 1 warning, 0 errors
+Sources\main.c(20): error:  #65: expected a ";"
+  uint32_t HAL_GetTick(void) {
+Sources\main.c(53): warning:  #12-D: parsing restarts here after previous syntax error
+                                  
+CC_CLOCKTYPE_PCLK2;
+Sources\main.c(54): error:  #20: identifier "RCC_ClkInitStruct" is undefined
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+Sources\main.h(22): warning:  #177-D: variable "temperatureMutex" was declared but never referenced
+  osMutexId temperatureMutex;
+Sources\main.h(23): warning:  #177-D: variable "tim3_flag" was declared but never referenced
+  uint8_t tim3_flag;
+Sources\main.h(24): warning:  #177-D: variable "tim3_ticks" was declared but never referenced
+  uint16_t tim3_ticks;
+Sources\main.h(26): warning:  #177-D: variable "TimmingDelay" was declared but never referenced
+  uint32_t TimmingDelay;
+Sources\main.h(27): warning:  #177-D: variable "accelerometer_out" was declared but never referenced
+  float accelerometer_out[3];
+Sources\main.c(74): warning:  #676-D: using out-of-scope declaration of function "selectDigit" (declared at line 20 of "Sources\display_segment.h")
+                        selectDigit(i);
+Sources\main.c(75): warning:  #676-D: using out-of-scope declaration of function "reset" (declared at line 39 of "Sources\display_segment.h")
+                        reset();
+Sources\main.c(81): warning:  #676-D: using out-of-scope declaration of function "draw_angle" (declared at line 35 of "Sources\display_segment.h")
+        if (displayBool) draw_angle(displayValue);
+Sources\main.c(82): warning:  #676-D: using out-of-scope declaration of function "draw_temperature" (declared at line 30 of "Sources\display_segment.h")
+        else draw_temperature(displayValue);
+Sources\main.c(170): warning:  #223-D: function "SystemClock_Config" declared implicitly
+    SystemClock_Config();                     /* Configure the System Clock     */
+Sources\main.c(176): warning:  #676-D: using out-of-scope declaration of function "initialize_LED_IO" (declared at line 14 of "Sources\main.h")
+        initialize_LED_IO();                       /* Initialize LED GPIO Buttons    */
+Sources\main.c(178): warning:  #676-D: using out-of-scope declaration of function "start_Thread_LED" (declared at line 15 of "Sources\main.h")
+        start_Thread_LED();                                      /* Create LED thread              */   
+Sources\main.c(181): warning:  #676-D: using out-of-scope declaration of function "ADC_config" (declared at line 25 of "Sources\Thread_TempSensor.h")
+        ADC_config();
+Sources\main.c(183): warning:  #676-D: using out-of-scope declaration of function "start_Thread_TempSensor" (declared at line 22 of "Sources\Thread_TempSensor.h")
+        start_Thread_TempSensor();
+Sources\main.c(187): warning:  #676-D: using out-of-scope declaration of function "init_accelerometer" (declared at line 75 of "Sources\accelerometer.h")
+        init_accelerometer();
+Sources\main.c: 21 warnings, 2 errors
 compiling accelerometer.c...
-Sources\accelerometer.h(62): warning:  #1-D: last line of file ends without a newline
+Sources\accelerometer.h(79): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\accelerometer.c(16): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+Sources\accelerometer.c(15): error:  #65: expected a ";"
+  int start_Thread_Accelerometer (void) {
+Sources\accelerometer.c(78): warning:  #12-D: parsing restarts here after previous syntax error
+        kalmanZ.p = 0.0;
+Sources\accelerometer.c(8): warning:  #177-D: variable "os_thread_def_Thread_Accelerometer" was declared but never referenced
+  osThreadDef(Thread_Accelerometer, osPriorityNormal, 1, NULL); // TODO: Can we have multiple priorities of 0
+Sources\accelerometer.c(89): warning:  #1035-D: single-precision operand implicitly converted to double-precision
         accel.x = Ax*
 CC11 + Ay*ACC12 + Az*ACC13 + ACC10;
-Sources\accelerometer.c(17): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+Sources\accelerometer.c(90): warning:  #1035-D: single-precision operand implicitly converted to double-precision
         accel.y = Ax*
 CC21 + Ay*
 CC22 + Az*ACC23 + ACC20;
-Sources\accelerometer.c(18): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+Sources\accelerometer.c(91): warning:  #1035-D: single-precision operand implicitly converted to double-precision
         accel.z = Ax*
 CC31 + Ay*
 CC32 + Az*
 CC33 + ACC30;
-Sources\accelerometer.c(40): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+Sources\accelerometer.c(118): warning:  #1035-D: single-precision operand implicitly converted to double-precision
         return 90.0 - 
 EGREES(acos(accel.z/1000.0));
-Sources\accelerometer.c(84): warning:  #1-D: last line of file ends without a newline
+Sources\accelerometer.c(163): warning:  #676-D: using out-of-scope declaration of function "config_accelerometer_kalman" (declared at line 71 of "Sources\accelerometer.h")
+        config_accelerometer_kalman();
+Sources\accelerometer.c(165): warning:  #1-D: last line of file ends without a newline
   }
-Sources\accelerometer.c: 6 warnings, 0 errors
-compiling display_segment.c...
-Sources\display_segment.h(39): warning:  #1295-D: Deprecated declaration reset - give arg types
-  void reset();
-Sources\display_segment.h(42): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\display_segment.c(277): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        if (temp >= 100.0){
-Sources\display_segment.c(288): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-                if (temp >= 10.0){
-Sources\display_segment.c(354): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        if (angle >= 100.0){
-Sources\display_segment.c(365): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        else if(angle >= 10.0) {
-Sources\display_segment.c(349): warning:  #177-D: variable "displayValues" was declared but never referenced
-        int displayValues = 3;
-Sources\display_segment.c: 7 warnings, 0 errors
-compiling keypad.c...
-Sources\keypad.h(53): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\keypad.c: 1 warning, 0 errors
-assembling Kalmanfilter_asm.s...
-compiling supporting_functions.c...
-compiling fput_debug.c...
-compiling LIS3DSH.c...
-Accelerometer\src\LIS3DSH.c(369): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_2G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(379): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_4G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(389): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_6G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(399): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_8G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(409): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_16G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c: 5 warnings, 0 errors
-compiling RTX_Conf_CM.c...
-compiling stm32f4xx_hal.c...
-compiling stm32f4xx_hal_adc.c...
-compiling stm32f4xx_hal_adc_ex.c...
-compiling stm32f4xx_hal_cortex.c...
-compiling stm32f4xx_hal_dma.c...
-compiling stm32f4xx_hal_dma_ex.c...
-compiling stm32f4xx_hal_gpio.c...
-compiling stm32f4xx_hal_pwr.c...
-compiling stm32f4xx_hal_pwr_ex.c...
-compiling stm32f4xx_hal_rcc.c...
-compiling stm32f4xx_hal_rcc_ex.c...
-compiling stm32f4xx_hal_spi.c...
-compiling stm32f4xx_hal_tim.c...
-compiling stm32f4xx_hal_tim_ex.c...
-compiling stm32f4xx_hal_uart.c...
-compiling stm32f4xx_hal_usart.c...
-assembling startup_stm32f407xx.s...
-compiling system_stm32f4xx.c...
-linking...
-Program Size: Code=37444 RO-data=584 RW-data=112 ZI-data=7936  
-".\Objects\Blinky.axf" - 0 Error(s), 27 Warning(s).
+Sources\accelerometer.c: 9 warnings, 1 error
+".\Objects\Blinky.axf" - 3 Error(s), 30 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -252,6 +226,7 @@ Package Vendor: Keil
 
    * Component: Keil::Device:STM32Cube HAL:USART:1.4.2
       Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_usart.c
+Target not created.
 </pre>
 </body>
 </html>

@@ -10,13 +10,14 @@
 
 #include "main.h"
 
+
 /**
 	These lines are mandatory to make CMSIS-RTOS RTX work with te new Cube HAL
 */
 #ifdef RTE_CMSIS_RTOS_RTX
 extern uint32_t os_time;
 
-uint32_t HAL_GetTick(void) { 
+uint32_t HAL_GetTick(void) {
   return os_time; 
 }
 #endif
@@ -155,6 +156,9 @@ void TIM3_IRQHandler(void) {
 }
 
 
+
+
+
 /**  Runs user interface system
    * @brief  Initializes threads and peripherals to maintian a RTOS for the user **/
 int main (void) {
@@ -173,11 +177,15 @@ int main (void) {
 
 	start_Thread_LED();					 /* Create LED thread              */	
   
-	initialize_Temp_Thread();
+	//initialize and configure temperature ADC
+	ADC_config();
 	
 	start_Thread_TempSensor();
 	
 	// TODO: Add accelerometer thread initialization and start
+	
+	init_accelerometer();
+	start_Thread_Accelerometer();
 	
 	// TODO: Add key press thread initialization and start
 	

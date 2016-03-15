@@ -87,7 +87,7 @@ void Delay(uint32_t time)
 /**  ADC Configuration
    * @brief  Configures ADC1 Channel 16 so that temperature values can be read
    */
-void initialize_Temp_Thread(void) {
+void ADC_config(void) {
 
 	ADC_ChannelConfTypeDef ADC1_ch16;
 	

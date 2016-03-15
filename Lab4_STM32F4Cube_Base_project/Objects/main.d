@@ -39,8 +39,8 @@
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\main.o: Sources\accelerometer.h
 .\objects\main.o: .\Accelerometer\inc\lis3dsh.h
+.\objects\main.o: Sources\global_vars.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 .\objects\main.o: Sources\keypad.h
-.\objects\main.o: Sources\global_vars.h
 .\objects\main.o: Sources\display_segment.h
 .\objects\main.o: Sources\Thread_TempSensor.h

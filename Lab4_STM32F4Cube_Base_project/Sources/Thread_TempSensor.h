@@ -18,27 +18,11 @@
 
 /* Private typedef -----------------------------------------------------------*/
 
-/* @brief Structure for the Kalman filter  */ 
-typedef struct kalman_t{
-	float q;
-	float r;
-	float x;
-	float p;
-	float k;
-} kalman_t;
-
-/* Private function prototypes -----------------------------------------------*/
-
-/**  Assembly Kalmann filter function
-   * @brief  Filters values to remove noisy fluctuations
-	 * @param  Input value of measurements, array to output to, length of arrays, and kalman parameter struct
-   * @retval Returns updated output array **/
-int Kalmanfilter_asm(float* inputArray, float* outputArray, int arrayLength, kalman_t* kalman);
 
 int start_Thread_TempSensor(void);
 void Thread_TempSensor (void const *argument);  
 void updateTemp(void);
-void initialize_Temp_Thread(void);
+void ADC_config(void);
 int timer(__IO uint32_t time);
 void Delay(uint32_t time);
 

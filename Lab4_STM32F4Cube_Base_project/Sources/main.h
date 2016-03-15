@@ -24,5 +24,5 @@ uint8_t tim3_flag;
 uint16_t tim3_ticks;
 TIM_HandleTypeDef handle_tim3;
 uint32_t TimmingDelay;
-
+float accelerometer_out[3];
 #endif

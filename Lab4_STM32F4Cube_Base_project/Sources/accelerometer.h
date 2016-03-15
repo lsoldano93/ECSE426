@@ -4,7 +4,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
 #include "stm32f4xx_hal.h"
+#include "cmsis_os.h"   
 #include "lis3dsh.h"
+#include "global_vars.h"
 #include "math.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,8 +33,21 @@ typedef struct {
 #define DEGREES(x) (180.0*x/PI)
 
 /* Private variables ---------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/ 
+//Might want to make these two global
 
+osThreadId tid_Thread_Accelerometer;
+float accelerometer_out[3];
+accelerometer_values accel;
+float accel_x, accel_y, accel_z;
+float roll, pitch;
+kalman_t kalmanX, kalmanY, kalmanZ;
+/* Private function prototypes -----------------------------------------------*/ 
+int start_Thread_Accelerometer (void);
+
+void Thread_Accelerometer (void const *argument);
+
+void accelerometer_mode(void) {
+	
 /**  Accelerometer bread and butter
    * @brief  Updates x, y, z parameters of accelerometer by reading from MEMs device
 	 * @param  Locations where updated values will be stored **/
@@ -52,6 +67,8 @@ float calc_roll_angle(void);
    * @brief  Calculates yaw angle
    * @retval Returns yaw angle **/
 float calc_yaw_angle(void);
+
+void config_accelerometer_kalman(void);
 
 /**  Initialize accelerometer
    * @brief  Initializes accelerometer for use **/

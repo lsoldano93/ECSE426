@@ -1,13 +1,86 @@
-
-
 /* Includes ------------------------------------------------------------------*/
 #include "accelerometer.h"
 
 /* Private variables ---------------------------------------------------------*/
 
-accelerometer_values accel;
-
 /* Private functions ---------------------------------------------------------*/
+
+osThreadDef(Thread_Accelerometer, osPriorityNormal, 1, NULL); // TODO: Can we have multiple priorities of 0
+
+/**  Initiates temperature sensor thread
+   * @brief  Builds thread and starts it
+   * @retval Temperature float in celcius
+   */
+	 
+int start_Thread_Accelerometer (void) {
+  tid_Thread_Accelerometer = osThreadCreate(osThread(Thread_Accelerometer ), NULL); // Start acclerometer thread
+  if (!tid_Thread_Accelerometer){
+		printf("Error starting acclerometer thread!");
+		return(-1); 
+	}
+  return(0);
+}
+
+void Thread_Accelerometer (void const *argument){
+	
+	while(1){
+		accelerometer_mode();
+	}
+}
+
+void accelerometer_mode(void) {
+	//add in mutex wait here
+	update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
+			
+	roll = calc_roll_angle();
+	pitch = calc_pitch_angle();
+			
+}
+
+/**
+  * @brief  Input Capture callback in non blocking mode 
+  * @param  htim: pointer to a TIM_HandleTypeDef structure that contains
+  *                the configuration information for TIM module.
+  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	
+	/* Prevent unused argument(s) compilation warning */
+  __IO uint32_t tmpreg = 0x00;
+  UNUSED(tmpreg); 
+	
+	// If callback regards GPIO pin associated with external accel interrupt, read accel
+	if(GPIO_Pin == GPIO_PIN_0) {
+		LIS3DSH_ReadACC(accelerometer_out);
+	}	
+}
+
+void config_accelerometer_kalman(void) {
+	
+	//Configure kalman filter for x
+	kalmanX.q = 0.02;
+	kalmanX.r = 4.5;
+	kalmanX.x = 90.0;
+	kalmanX.p = 0.0;
+	kalmanX.k = 0.0;
+		
+	//Configure kalman filter for y
+	kalmanY.q = 0.02;
+	kalmanY.r = 4.5;
+	kalmanY.x = 90.0;
+	kalmanY.p = 0.0;
+	kalmanY.k = 0.0;
+	
+	
+	//Configure kalman filter for z
+	kalmanZ.q = 0.02;
+	kalmanZ.r = 4.5;
+	kalmanZ.x = 90.0;
+	kalmanZ.p = 0.0;
+	kalmanZ.k = 0.0;
+	
+}
+
+
 
 /**  Accelerometer bread and butter
    * @brief  Updates x, y, z parameters of accelerometer by reading from MEMs device
@@ -16,6 +89,11 @@ void update_accel_values(float Ax, float Ay, float Az) {
 	accel.x = Ax*ACC11 + Ay*ACC12 + Az*ACC13 + ACC10;
 	accel.y = Ax*ACC21 + Ay*ACC22 + Az*ACC23 + ACC20;
 	accel.z = Ax*ACC31 + Ay*ACC32 + Az*ACC33 + ACC30;
+	
+	
+	Kalmanfilter_asm(&accel.x, &accel.x, 1, &kalmanX);	
+	Kalmanfilter_asm(&accel.y, &accel.y, 1, &kalmanY);	
+	Kalmanfilter_asm(&accel.z, &accel.z, 1, &kalmanZ);	
 }
 
 /**  Calculates pitch angle
@@ -80,5 +158,8 @@ void init_accelerometer(void) {
 	HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
 	HAL_NVIC_ClearPendingIRQ(EXTI0_IRQn);
 	LIS3DSH_DataReadyInterruptConfig(&init_it); 
+	
+	//initialize kalman filters for the accelerometer
+	config_accelerometer_kalman();
 
 }
