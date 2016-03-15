@@ -428,11 +428,6 @@
               <FilePath>.\Sources\global_vars.h</FilePath>
             </File>
             <File>
-              <FileName>Thread_LED.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\Thread_LED.c</FilePath>
-            </File>
-            <File>
               <FileName>Thread_TempSensor.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\Thread_TempSensor.c</FilePath>
@@ -443,39 +438,24 @@
               <FilePath>.\Sources\Thread_TempSensor.h</FilePath>
             </File>
             <File>
-              <FileName>accelerometer.c</FileName>
+              <FileName>Thread_Accelerometer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Sources\accelerometer.c</FilePath>
+              <FilePath>.\Sources\Thread_Accelerometer.c</FilePath>
             </File>
             <File>
-              <FileName>accelerometer.h</FileName>
+              <FileName>Thread_Accelerometer.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Sources\accelerometer.h</FilePath>
+              <FilePath>.\Sources\Thread_Accelerometer.h</FilePath>
             </File>
             <File>
-              <FileName>display_segment.c</FileName>
+              <FileName>Thread_UserInterface.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Sources\display_segment.c</FilePath>
+              <FilePath>.\Sources\Thread_UserInterface.c</FilePath>
             </File>
             <File>
-              <FileName>display_segment.h</FileName>
+              <FileName>Thread_UserInterface.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Sources\display_segment.h</FilePath>
-            </File>
-            <File>
-              <FileName>keypad.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\keypad.c</FilePath>
-            </File>
-            <File>
-              <FileName>keypad.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\keypad.h</FilePath>
-            </File>
-            <File>
-              <FileName>Kalmanfilter_asm.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
+              <FilePath>.\Sources\Thread_UserInterface.h</FilePath>
             </File>
             <File>
               <FileName>supporting_functions.c</FileName>
@@ -486,6 +466,11 @@
               <FileName>fput_debug.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\fput_debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>Kalmanfilter_asm.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
             </File>
           </Files>
         </Group>
@@ -929,11 +914,6 @@
               <FilePath>.\Sources\global_vars.h</FilePath>
             </File>
             <File>
-              <FileName>Thread_LED.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\Thread_LED.c</FilePath>
-            </File>
-            <File>
               <FileName>Thread_TempSensor.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\Thread_TempSensor.c</FilePath>
@@ -944,39 +924,24 @@
               <FilePath>.\Sources\Thread_TempSensor.h</FilePath>
             </File>
             <File>
-              <FileName>accelerometer.c</FileName>
+              <FileName>Thread_Accelerometer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Sources\accelerometer.c</FilePath>
+              <FilePath>.\Sources\Thread_Accelerometer.c</FilePath>
             </File>
             <File>
-              <FileName>accelerometer.h</FileName>
+              <FileName>Thread_Accelerometer.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Sources\accelerometer.h</FilePath>
+              <FilePath>.\Sources\Thread_Accelerometer.h</FilePath>
             </File>
             <File>
-              <FileName>display_segment.c</FileName>
+              <FileName>Thread_UserInterface.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Sources\display_segment.c</FilePath>
+              <FilePath>.\Sources\Thread_UserInterface.c</FilePath>
             </File>
             <File>
-              <FileName>display_segment.h</FileName>
+              <FileName>Thread_UserInterface.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Sources\display_segment.h</FilePath>
-            </File>
-            <File>
-              <FileName>keypad.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\keypad.c</FilePath>
-            </File>
-            <File>
-              <FileName>keypad.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\keypad.h</FilePath>
-            </File>
-            <File>
-              <FileName>Kalmanfilter_asm.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
+              <FilePath>.\Sources\Thread_UserInterface.h</FilePath>
             </File>
             <File>
               <FileName>supporting_functions.c</FileName>
@@ -987,6 +952,11 @@
               <FileName>fput_debug.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\fput_debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>Kalmanfilter_asm.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
             </File>
           </Files>
         </Group>
@@ -1430,11 +1400,6 @@
               <FilePath>.\Sources\global_vars.h</FilePath>
             </File>
             <File>
-              <FileName>Thread_LED.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\Thread_LED.c</FilePath>
-            </File>
-            <File>
               <FileName>Thread_TempSensor.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\Thread_TempSensor.c</FilePath>
@@ -1445,39 +1410,24 @@
               <FilePath>.\Sources\Thread_TempSensor.h</FilePath>
             </File>
             <File>
-              <FileName>accelerometer.c</FileName>
+              <FileName>Thread_Accelerometer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Sources\accelerometer.c</FilePath>
+              <FilePath>.\Sources\Thread_Accelerometer.c</FilePath>
             </File>
             <File>
-              <FileName>accelerometer.h</FileName>
+              <FileName>Thread_Accelerometer.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Sources\accelerometer.h</FilePath>
+              <FilePath>.\Sources\Thread_Accelerometer.h</FilePath>
             </File>
             <File>
-              <FileName>display_segment.c</FileName>
+              <FileName>Thread_UserInterface.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Sources\display_segment.c</FilePath>
+              <FilePath>.\Sources\Thread_UserInterface.c</FilePath>
             </File>
             <File>
-              <FileName>display_segment.h</FileName>
+              <FileName>Thread_UserInterface.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Sources\display_segment.h</FilePath>
-            </File>
-            <File>
-              <FileName>keypad.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\keypad.c</FilePath>
-            </File>
-            <File>
-              <FileName>keypad.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\keypad.h</FilePath>
-            </File>
-            <File>
-              <FileName>Kalmanfilter_asm.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
+              <FilePath>.\Sources\Thread_UserInterface.h</FilePath>
             </File>
             <File>
               <FileName>supporting_functions.c</FileName>
@@ -1488,6 +1438,11 @@
               <FileName>fput_debug.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Sources\fput_debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>Kalmanfilter_asm.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Sources\Kalmanfilter_asm.s</FilePath>
             </File>
           </Files>
         </Group>

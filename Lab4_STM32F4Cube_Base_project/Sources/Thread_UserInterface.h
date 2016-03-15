@@ -5,11 +5,30 @@
 #include "global_vars.h"
 #include "stm32f4xx_hal_gpio.h"
 
-#define UI_THREAD_OSDELAY 5  // Delay in milliseconds
+#define UI_THREAD_OSDELAY 10  // Delay in milliseconds
+#define DISPLAY_DELAY 1			 // Delay in milliseconds
 #define DEBOUNCE_DELAY 25    // Delay in milliseconds
 
 #define ROWS 4
 #define COLS 3
+
+	/* Pin mappings
+	
+		 7-Segment Display Pinout {1:CCD1, 2:CCD2, 3:D, 4:Degree, 5:E, 6:CCD3, 7:DP,
+		                          8:CCD4, 9:, 10:, 11:F, 12:, 13:C, 14:A, 15:G, 16:B}
+	
+		 Keypad Pinout {1:R1, 2:R2, 4:R4, 5:R5, 6:C1, 7:C2, 8:C3}
+	
+	   GPIO Pin Mapping for Display
+		 Segment Ctrls {CCD1:PC1, CCD2:PC2, CCD3:PC4, CCD4:PC5}
+	   DP & DC Ctrl  {DP:PC6, DC:PC7}
+		 Segments      {A:PB0, B:PB1, C:PB5, D:PB11, E:PB12, F:PB13, G:PB14} 
+	
+		 GPIO Pin Mapping for Keypad
+		 Rows: 		{R1:PD1, R2:PD2, R3:PD6 , R4:PD7}
+		 Columns: {C1:PD8, C2:PD9, C3:PD10}
+	
+	*/
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -24,7 +43,7 @@ int start_Thread_UserInterface (void);
 /**  User interface thread 
    * @brief  Runs UI thread which reads key presses and updates the display accordingly
    */
-void Thread_UserInterface (void const *argument)
+void Thread_UserInterface (void const *argument);
 
 /**  Handle key presses
    * @brief Pressing 0 toggles temperature/accelerometer; pressing 1/2 toggles tilt angles
@@ -84,6 +103,6 @@ void UserInterface_config(void);
 
 /**  Uses timer 3 to generate delay for display
    * @brief  Allows for software delay to be used for display purposes **/
-void delay(uint32_t time);
+void Delay(uint32_t time);
 
 #endif

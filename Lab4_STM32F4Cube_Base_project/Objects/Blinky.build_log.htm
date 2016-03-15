@@ -26,92 +26,38 @@ Project File Date:  03/15/2016
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.05 update 2 (build 169)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
-Rebuild target 'Lab4'
+Build target 'Lab4'
 compiling main.c...
 Sources\Thread_TempSensor.h(26): warning:  #1-D: last line of file ends without a newline
   #endif
 Sources\Thread_Accelerometer.h(103): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\Thread_UserInterface.h(48): warning:  #1-D: last line of file ends without a newline
+Sources\Thread_UserInterface.h(98): warning:  #1295-D: Deprecated declaration resetPins - give arg types
+  void resetPins();
+Sources\Thread_UserInterface.h(108): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\main.h(46): warning:  #1-D: last line of file ends without a newline
+Sources\main.h(47): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\main.c: 4 warnings, 0 errors
-compiling Thread_TempSensor.c...
-Sources\Thread_TempSensor.h(26): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\Thread_TempSensor.c(36): warning:  #550-D: variable "Status_TempSensor" was set but never used
-        osEvent Status_TempSensor;
-Sources\Thread_TempSensor.c: 2 warnings, 0 errors
-compiling Thread_Accelerometer.c...
-Sources\Thread_Accelerometer.h(103): warning:  #1-D: last line of file ends without a newline
-  #endif
-Sources\Thread_Accelerometer.c(37): warning:  #550-D: variable "Status_Accelerometer" was set but never used
-        osEvent Status_Accelerometer;
-Sources\Thread_Accelerometer.c(104): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        accel.x = Ax*
-CC11 + Ay*ACC12 + Az*ACC13 + ACC10;
-Sources\Thread_Accelerometer.c(105): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        accel.y = Ax*
-CC21 + Ay*
-CC22 + Az*ACC23 + ACC20;
-Sources\Thread_Accelerometer.c(106): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        accel.z = Ax*
-CC31 + Ay*
-CC32 + Az*
-CC33 + ACC30;
-Sources\Thread_Accelerometer.c(130): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        return 90.0 - 
-EGREES(acos(accel.z/1000.0));
-Sources\Thread_Accelerometer.c(182): warning:  #1-D: last line of file ends without a newline
-  }
-Sources\Thread_Accelerometer.c: 7 warnings, 0 errors
+Sources\main.c: 5 warnings, 0 errors
 compiling Thread_UserInterface.c...
-Sources\Thread_UserInterface.h(48): warning:  #1-D: last line of file ends without a newline
+Sources\Thread_UserInterface.h(98): warning:  #1295-D: Deprecated declaration resetPins - give arg types
+  void resetPins();
+Sources\Thread_UserInterface.h(108): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\Thread_UserInterface.c: 1 warning, 0 errors
-compiling supporting_functions.c...
-compiling fput_debug.c...
-assembling Kalmanfilter_asm.s...
-compiling LIS3DSH.c...
-Accelerometer\src\LIS3DSH.c(369): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_2G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(379): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_4G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(389): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_6G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(399): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_8G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c(409): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-          *out =(float)(
-IS3DSH_SENSITIVITY_16G * (float)aggregateResult);
-Accelerometer\src\LIS3DSH.c: 5 warnings, 0 errors
-compiling RTX_Conf_CM.c...
-compiling stm32f4xx_hal.c...
-compiling stm32f4xx_hal_adc.c...
-compiling stm32f4xx_hal_adc_ex.c...
-compiling stm32f4xx_hal_cortex.c...
-compiling stm32f4xx_hal_dma.c...
-compiling stm32f4xx_hal_dma_ex.c...
-compiling stm32f4xx_hal_gpio.c...
-compiling stm32f4xx_hal_pwr.c...
-compiling stm32f4xx_hal_pwr_ex.c...
-compiling stm32f4xx_hal_rcc.c...
-compiling stm32f4xx_hal_rcc_ex.c...
-compiling stm32f4xx_hal_spi.c...
-compiling stm32f4xx_hal_tim.c...
-compiling stm32f4xx_hal_tim_ex.c...
-compiling stm32f4xx_hal_uart.c...
-compiling stm32f4xx_hal_usart.c...
-assembling startup_stm32f407xx.s...
-compiling system_stm32f4xx.c...
+Sources\Thread_UserInterface.c(124): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        if (temp >= 100.0){
+Sources\Thread_UserInterface.c(135): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                if (temp >= 10.0){
+Sources\Thread_UserInterface.c(186): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        if (angle >= 100.0){
+Sources\Thread_UserInterface.c(197): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        else if(angle >= 10.0) {
+Sources\Thread_UserInterface.c(181): warning:  #177-D: variable "displayValues" was declared but never referenced
+        int displayValues = 3;
+Sources\Thread_UserInterface.c: 7 warnings, 0 errors
 linking...
-Program Size: Code=46780 RO-data=820 RW-data=152 ZI-data=8088  
-".\Objects\Blinky.axf" - 0 Error(s), 19 Warning(s).
+Program Size: Code=49908 RO-data=860 RW-data=156 ZI-data=8132  
+".\Objects\Blinky.axf" - 0 Error(s), 12 Warning(s).
 
 <h2>Software Packages used:</h2>
 

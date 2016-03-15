@@ -13,11 +13,11 @@ extern osThreadId tid_Thread_Accelerometer;
 extern osThreadId tid_Thread_UserInterface;
 
 osMutexId temperatureMutex;
-osMutexId accelerometerMutex;
 osMutexId tiltAnglesMutex;
 TIM_HandleTypeDef handle_tim3;
 
 uint8_t tim3_ticks;
+uint32_t timingDelay;
 
 void SystemClock_Config(void);
 

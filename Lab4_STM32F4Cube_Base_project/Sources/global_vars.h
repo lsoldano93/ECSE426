@@ -12,13 +12,8 @@
 
 /* Public variables ----------------------------------------------------------*/
 
-// Flags
-extern uint8_t key_state;
-extern uint8_t tilt_state; 
-
 // Mutexes
 extern osMutexId temperatureMutex;
-extern osMutexId accelerometerMutex;
 extern osMutexId tiltAnglesMutex;
 
 // Shared variables
@@ -26,8 +21,9 @@ extern float temperatureValue;
 extern float accelerometer_out[3];
 extern float rollValue, pitchValue;
 
-// Timer 3 handler
+// Timer 3 values
 extern TIM_HandleTypeDef handle_tim3;
+extern uint32_t timingDelay;
 
 /* @brief Structure for the Kalman filter  */ 
 typedef struct kalman_t{

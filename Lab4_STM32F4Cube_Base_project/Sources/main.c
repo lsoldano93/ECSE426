@@ -157,11 +157,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   UNUSED(tmpreg); 
 	
 	/* If callback regards GPIO pin associated with external accelerometer interrupt, 
-		 read accelerometer to output when available and signal accelerometer thread to execute */
+		 read accelerometer to output and signal accelerometer thread to execute */
 	if(GPIO_Pin == GPIO_PIN_0) {
-		osMutexWait(accelerometerMutex, (uint32_t) THREAD_TIMEOUT);
 		LIS3DSH_ReadACC(accelerometer_out);
-		osMutexRelease(accelerometerMutex);
 		osSignalSet(tid_Thread_Accelerometer, (int32_t) THREAD_GREEN_LIGHT);
 	}	
 	
@@ -182,8 +180,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	// Only perform callback if proper timer is calling it
 	if (htim == &handle_tim3){
 		
-		tim3_ticks++;
+		if(timingDelay !=0) {
+			timingDelay--;
+		}
 		
+		tim3_ticks++;
 		if (tim3_ticks > 8){
 			// Send signal to temperature sensor to take in a new reading
 			osSignalSet(tid_Thread_TempSensor, (int32_t) THREAD_GREEN_LIGHT);
@@ -203,6 +204,7 @@ int main (void) {
   SystemClock_Config();                     /* Configure the System Clock     */
 	
 	// Initialize flags and counters
+	timingDelay = 0;
 	tim3_ticks = 0;
 	
 	printf("Beginning Program\n");

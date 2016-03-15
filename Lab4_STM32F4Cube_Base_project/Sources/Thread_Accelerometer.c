@@ -10,7 +10,7 @@ accelerometer_values accel;
 float accel_x, accel_y, accel_z;
 float rollValue, pitchValue;
 kalman_t kalmanX, kalmanY, kalmanZ;
-const void *accelerometerMutexPtr, *tiltAnglesMutexPtr;
+const void* tiltAnglesMutexPtr;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -52,10 +52,8 @@ void Thread_Accelerometer (void const *argument){
 	 * @param  Locations where updated values will be stored **/
 void accelerometer_mode(void) {
 	
-	// Wait for permission to access accelerometer_out and then calculate real values
-	osMutexWait(accelerometerMutex, (uint32_t) THREAD_TIMEOUT);
+	// Access accelerometer_out and then calculate real values
 	update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
-	osMutexRelease(accelerometerMutex);
 	
 	// Filter updated accelerometer values
 	Kalmanfilter_asm(&accel.x, &accel.x, 1, &kalmanX);	
@@ -175,7 +173,6 @@ void Accelerometer_config(void) {
 	LIS3DSH_DataReadyInterruptConfig(&init_it); 
 	
 	// Initialize accelerometer mutexs
-	accelerometerMutex = osMutexCreate(accelerometerMutexPtr);
 	tiltAnglesMutex = osMutexCreate(tiltAnglesMutexPtr);
 	
 	//initialize kalman filters for the accelerometer
