@@ -32,17 +32,21 @@ int start_Thread_TempSensor (void) {
 void Thread_TempSensor (void const *argument){
 	
 	osEvent Status_TempSensor;
-	
+	int counter = 0;
+
 	// Update temperature values when signaled to do so, clear said signal after execution
 	while(1){
 		
 		Status_TempSensor = osSignalWait((int32_t) THREAD_GREEN_LIGHT, (uint32_t) THREAD_TIMEOUT);
-		//updateTemp();
-		
+		counter++;
+		if(counter == 10) {	
+			updateTemp();
+			counter = 0;
+		}
 		/* TODO: Remove this code once ADC is configured properly */
-		osMutexWait(temperatureMutex, (uint32_t) THREAD_TIMEOUT);
-		temperatureValue  = 25.0;	
-		osMutexRelease(temperatureMutex);	
+//		osMutexWait(temperatureMutex, (uint32_t) THREAD_TIMEOUT);
+//		temperatureValue  = 25.0;	
+//		osMutexRelease(temperatureMutex);	
 		/*                                                        */
 		
 	}
@@ -59,11 +63,10 @@ void updateTemp(void) {
 	
 	// Obtain temperature voltage value from ADC
 	//need to get poll working
-	HAL_ADC_PollForConversion(&ADC1_Handle, (uint32_t) THREAD_TIMEOUT);
 	VSENSE = HAL_ADC_GetValue(&ADC1_Handle); 
-	
+//	HAL_ADC_Stop(&ADC1_Handle);
 	// Filter raw temperature sensor values
-	//Kalmanfilter_asm(&VSENSE, &VSENSE, 1, &kalman_temperature);
+	Kalmanfilter_asm(&VSENSE, &VSENSE, 1, &kalman_temperature);
 	
 	/* Obtain permission for access to tempValue and then Supdate
 	   ---------------------------------------------------------
@@ -73,7 +76,7 @@ void updateTemp(void) {
 	   --------------------------------------------------------- */
 	osMutexWait(temperatureMutex, (uint32_t) THREAD_TIMEOUT);
 	temperatureValue  = (VSENSE*(3.0f/ 4096.0f) - 0.76f)/0.025f + 25.0f;	
-	printf("Temperature Value: %f\n", temperatureValue);
+	//printf("Temperature Value: %f\n", temperatureValue);
 	osMutexRelease(temperatureMutex);	
 	
 }
@@ -86,8 +89,6 @@ void ADC_config(void) {  // TODO: Make this configuration proper so that it actu
 
 	ADC_ChannelConfTypeDef ADC1_ch16;
 	
-	// Enable ADC clock
-	__ADC1_CLK_ENABLE();
 	
 	// Initialize values for ADC1 handle type def
 	ADC1_Handle.Instance = ADC1;
@@ -95,14 +96,15 @@ void ADC_config(void) {  // TODO: Make this configuration proper so that it actu
 	ADC1_Handle.Init.Resolution = ADC_RESOLUTION_12B;    									 
 	ADC1_Handle.Init.DataAlign = ADC_DATAALIGN_RIGHT;         						
 	ADC1_Handle.Init.ScanConvMode = DISABLE;           
-	ADC1_Handle.Init.EOCSelection = ENABLE;           			
-	ADC1_Handle.Init.ContinuousConvMode = DISABLE;      //
+	ADC1_Handle.Init.EOCSelection = DISABLE;         			
+	ADC1_Handle.Init.ContinuousConvMode = ENABLE;      //
 	ADC1_Handle.Init.DMAContinuousRequests = DISABLE;  
 	ADC1_Handle.Init.NbrOfConversion = 1;       													
 	ADC1_Handle.Init.DiscontinuousConvMode = DISABLE;  
 	ADC1_Handle.Init.NbrOfDiscConversion = 0;    
-	ADC1_Handle.Init.ExternalTrigConv = ADC_SOFTWARE_START;       //
+	ADC1_Handle.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;       //
 	ADC1_Handle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;  //
+	
 	
 	// Initialize values for temperature sensor (Temperature analog channel is Ch16 of ADC1)
 	ADC1_ch16.Channel = ADC_CHANNEL_16;
@@ -110,15 +112,20 @@ void ADC_config(void) {  // TODO: Make this configuration proper so that it actu
 	ADC1_ch16.SamplingTime = ADC_SAMPLETIME_480CYCLES;
 	ADC1_ch16.Offset = 0;
 	
-	// Initialize clock with error handling
-	HAL_ADC_Init(&ADC1_Handle);
 	
+	// Enable ADC clock
+	__ADC1_CLK_ENABLE();
+	
+	// Initialize clock with error handling
+
+	if(HAL_ADC_Init(&ADC1_Handle)!=HAL_OK){
+		//Error_Handler(ADC_INIT_FAIL);
+		printf("adc init fail\n");
+	}
 	// Configure temperature sensor peripheral 
 	HAL_ADC_ConfigChannel(&ADC1_Handle, &ADC1_ch16);
-	HAL_ADC_Start(&ADC1_Handle);
 	
-	// Initialize temperature sensor mutex
-	temperatureMutex = osMutexCreate(temperatureMutexPtr);
+	HAL_ADC_Start(&ADC1_Handle);
 	
 	// Allot values to the kalman filtration struct for the temperature sensor
 	kalman_temperature.q = tempKalman_q;
@@ -126,6 +133,9 @@ void ADC_config(void) {  // TODO: Make this configuration proper so that it actu
 	kalman_temperature.x = tempKalman_x;
 	kalman_temperature.p = tempKalman_p;
 	kalman_temperature.k = tempKalman_k;
+	
+	// Initialize temperature sensor mutex
+	temperatureMutex = osMutexCreate(temperatureMutexPtr);
 	
 }
 

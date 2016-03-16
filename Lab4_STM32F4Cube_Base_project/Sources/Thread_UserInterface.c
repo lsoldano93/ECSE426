@@ -5,6 +5,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 
+const int maxTemp = 35.0;
+
 // Pin maps for keypad columns and rows
 const uint16_t col_pinmap[3] = {GPIO_PIN_8, GPIO_PIN_9, GPIO_PIN_10};
 const uint16_t row_pinmap[4] = {GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_6, GPIO_PIN_7};
@@ -48,12 +50,15 @@ void Thread_UserInterface (void const *argument){
 	float tempValue = 0.0;
 	float rollAngle = 0.0;
 	float pitchAngle = 0.0;
+	int counter = 0;
 	
 	/* Initialize key and tilt states
 		 Key States = {0:Temperature, 1:Tilt Angles}
 		 States = {0:Roll, 1:Pitch}                    */
 	key_state = 0;
 	tilt_state = 0;
+	
+	
 	
 	while(1){
 		
@@ -62,14 +67,26 @@ void Thread_UserInterface (void const *argument){
 		// Read keys
 		handleKeyPress();
 		
+		// temperature alarm goes off and blinks segment display
+		if(temperatureValue >= maxTemp) {
+				counter++;
+				if(counter >= 30) {
+					counter = 0;
+					resetPins();
+					Delay(200);					
+				}				
+				
+		}
+
 		/* If key state is 0 then get access to temperature variable
 		   before drawing it to the display */
 		if (key_state == 0){
 			osMutexWait(temperatureMutex, (uint32_t) THREAD_TIMEOUT);
-			tempValue = temperatureValue;
+			tempValue = temperatureValue;			
 			osMutexRelease(temperatureMutex);
+			counter++;
 			drawTemperature(tempValue);
-
+			
 		}
 		/* Key state must be one, so see which tilt value to display and gain access
 		   before drawing it to the display */
@@ -215,7 +232,7 @@ void drawAngle(float angle) {
 	for(i=4; i>0; i--) {
 		
 		// For display of degree symbol
-		if (i ==4 ) {
+		if (i == 4 ) {
 			
 			resetPins();
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
@@ -223,15 +240,18 @@ void drawAngle(float angle) {
 			
 		}
 		else {
-			
 			resetPins();
-			selectDigit(i);
-			if (i == decimalPos) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-			else HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);	
-
-			lightNum(angleValue[3-i]);	
-		
-			
+			if(decimalPos == 30) {
+				selectDigit(i+1);
+				lightNum(angleValue[3-i]);
+			}
+			else {
+				selectDigit(i);		
+				if (i == decimalPos) HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+				else HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);	
+				lightNum(angleValue[3-i]);	
+			}
+					
 		}
 		
 		Delay(DISPLAY_DELAY); 

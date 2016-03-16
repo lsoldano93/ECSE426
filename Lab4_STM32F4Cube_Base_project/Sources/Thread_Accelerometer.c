@@ -35,12 +35,17 @@ int start_Thread_Accelerometer (void) {
 void Thread_Accelerometer (void const *argument){
 	
 	osEvent Status_Accelerometer;
-	
+	int counter = 0;
 	// Update accelerometer values when signaled to do so, clear said signal after execution
 	while(1){
 		
 		Status_Accelerometer = osSignalWait((int32_t) THREAD_GREEN_LIGHT, (uint32_t) THREAD_TIMEOUT);
-		accelerometer_mode();
+		counter++;
+		if(counter >= 10) {
+			accelerometer_mode();
+			counter = 0;
+		}
+		
 		
 	}
 	
@@ -54,7 +59,7 @@ void accelerometer_mode(void) {
 	
 	// Access accelerometer_out and then calculate real values
 	update_accel_values(accelerometer_out[0], accelerometer_out[1], accelerometer_out[2]);
-	
+	//printf("%f\n", accelerometer_out[2]);
 	// Filter updated accelerometer values
 	Kalmanfilter_asm(&accel.x, &accel.x, 1, &kalmanX);	
 	Kalmanfilter_asm(&accel.y, &accel.y, 1, &kalmanY);	
