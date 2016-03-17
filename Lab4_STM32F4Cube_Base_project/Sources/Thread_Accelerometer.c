@@ -79,25 +79,25 @@ void accelerometer_mode(void) {
 void config_accelerometer_kalman(void) {
 	
 	// Configure kalman filter for x
-	kalmanX.q = accelKalman_x_q;
-	kalmanX.r = accelKalman_x_r;
-	kalmanX.x = accelKalman_x_x;
-	kalmanX.p = accelKalman_x_p;
-	kalmanX.k = accelKalman_x_k;
+	kalmanX.q = 0.2;
+	kalmanX.r = 1.1;
+	kalmanX.x = 0.0;
+	kalmanX.p = 0.0;
+	kalmanX.k = 0.0;
 		
 	// Configure kalman filter for y
-	kalmanY.q = accelKalman_y_q;
-	kalmanY.r = accelKalman_y_r;
-	kalmanY.x = accelKalman_y_x;
-	kalmanY.p = accelKalman_y_p;
-	kalmanY.k = accelKalman_y_k;
+	kalmanY.q = 0.2;
+	kalmanY.r = 1,1;
+	kalmanY.x = 0.0;
+	kalmanY.p = 0.0;
+	kalmanY.k = 0.0;
 	
 	// Configure kalman filter for z
-	kalmanZ.q = accelKalman_z_q;
-	kalmanZ.r = accelKalman_z_r;
-	kalmanZ.x = accelKalman_z_x;
-	kalmanZ.p = accelKalman_z_p;
-	kalmanZ.k = accelKalman_z_k;
+	kalmanZ.q = 0.2;
+	kalmanZ.r = 1.1;
+	kalmanZ.x = 1000.0;
+	kalmanZ.p = 0.0;
+	kalmanZ.k = 0.0;
 	
 }
 

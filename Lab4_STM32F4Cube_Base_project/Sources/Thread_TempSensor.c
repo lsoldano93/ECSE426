@@ -128,11 +128,11 @@ void ADC_config(void) {  // TODO: Make this configuration proper so that it actu
 	HAL_ADC_Start(&ADC1_Handle);
 	
 	// Allot values to the kalman filtration struct for the temperature sensor
-	kalman_temperature.q = tempKalman_q;
-	kalman_temperature.r = tempKalman_r;
-	kalman_temperature.x = tempKalman_x;
-	kalman_temperature.p = tempKalman_p;
-	kalman_temperature.k = tempKalman_k;
+	kalman_temperature.q = 0.3;
+	kalman_temperature.r = 1.2;
+	kalman_temperature.x = 1000.0;
+	kalman_temperature.p = 0.0;
+	kalman_temperature.k = 0.0;
 	
 	// Initialize temperature sensor mutex
 	temperatureMutex = osMutexCreate(temperatureMutexPtr);
