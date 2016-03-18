@@ -27,31 +27,24 @@ Project File Date:  03/16/2016
 <h2>Output:</h2>
 *** Using Compiler 'V5.05 update 2 (build 169)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Lab4'
-compiling Thread_Accelerometer.c...
-Sources\Thread_Accelerometer.h(103): warning:  #1-D: last line of file ends without a newline
+compiling Thread_UserInterface.c...
+Sources\Thread_UserInterface.h(98): warning:  #1295-D: Deprecated declaration resetPins - give arg types
+  void resetPins();
+Sources\Thread_UserInterface.h(108): warning:  #1-D: last line of file ends without a newline
   #endif
-Sources\Thread_Accelerometer.c(37): warning:  #550-D: variable "Status_Accelerometer" was set but never used
-        osEvent Status_Accelerometer;
-Sources\Thread_Accelerometer.c(109): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        accel.x = Ax*
-CC11 + Ay*ACC12 + Az*ACC13 + ACC10;
-Sources\Thread_Accelerometer.c(110): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        accel.y = Ax*
-CC21 + Ay*
-CC22 + Az*ACC23 + ACC20;
-Sources\Thread_Accelerometer.c(111): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        accel.z = Ax*
-CC31 + Ay*
-CC32 + Az*
-CC33 + ACC30;
-Sources\Thread_Accelerometer.c(135): warning:  #1035-D: single-precision operand implicitly converted to double-precision
-        return 90.0 - 
-EGREES(acos(accel.z/1000.0));
-Sources\Thread_Accelerometer.c(186): warning:  #1-D: last line of file ends without a newline
-  }
-Sources\Thread_Accelerometer.c: 7 warnings, 0 errors
+Sources\Thread_UserInterface.c(138): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        if (temp >= 100.0){
+Sources\Thread_UserInterface.c(149): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+                if (temp >= 10.0){
+Sources\Thread_UserInterface.c(200): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        if (angle >= 100.0){
+Sources\Thread_UserInterface.c(211): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+        else if(angle >= 10.0) {
+Sources\Thread_UserInterface.c(195): warning:  #177-D: variable "displayValues" was declared but never referenced
+        int displayValues = 3;
+Sources\Thread_UserInterface.c: 7 warnings, 0 errors
 linking...
-Program Size: Code=47940 RO-data=868 RW-data=156 ZI-data=8132  
+Program Size: Code=47956 RO-data=868 RW-data=156 ZI-data=8132  
 ".\Objects\Blinky.axf" - 0 Error(s), 7 Warning(s).
 
 <h2>Software Packages used:</h2>

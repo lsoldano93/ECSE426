@@ -32,24 +32,14 @@ int start_Thread_TempSensor (void) {
 void Thread_TempSensor (void const *argument){
 	
 	osEvent Status_TempSensor;
-	int counter = 0;
 
 	// Update temperature values when signaled to do so, clear said signal after execution
 	while(1){
 		
 		Status_TempSensor = osSignalWait((int32_t) THREAD_GREEN_LIGHT, (uint32_t) THREAD_TIMEOUT);
-		counter++;
-		if(counter == 10) {	
-			updateTemp();
-			counter = 0;
-		}
-		/* TODO: Remove this code once ADC is configured properly */
-//		osMutexWait(temperatureMutex, (uint32_t) THREAD_TIMEOUT);
-//		temperatureValue  = 25.0;	
-//		osMutexRelease(temperatureMutex);	
-		/*                                                        */
-		
-	}
+		updateTemp();
+
+	}                                                       
 }
 	
 /**  Get temperature
@@ -64,9 +54,10 @@ void updateTemp(void) {
 	// Obtain temperature voltage value from ADC
 	//need to get poll working
 	VSENSE = HAL_ADC_GetValue(&ADC1_Handle); 
-//	HAL_ADC_Stop(&ADC1_Handle);
+
 	// Filter raw temperature sensor values
 	Kalmanfilter_asm(&VSENSE, &VSENSE, 1, &kalman_temperature);
+	//printf("%f\n", VSENSE);
 	
 	/* Obtain permission for access to tempValue and then Supdate
 	   ---------------------------------------------------------

@@ -4,8 +4,7 @@
 
 
 /* Private variables ---------------------------------------------------------*/
-
-const int maxTemp = 35.0;
+const int maxTemp = 25.0;
 
 // Pin maps for keypad columns and rows
 const uint16_t col_pinmap[3] = {GPIO_PIN_8, GPIO_PIN_9, GPIO_PIN_10};
@@ -58,8 +57,6 @@ void Thread_UserInterface (void const *argument){
 	key_state = 0;
 	tilt_state = 0;
 	
-	
-	
 	while(1){
 		
 		osDelay(UI_THREAD_OSDELAY);
@@ -97,7 +94,7 @@ void Thread_UserInterface (void const *argument){
 				osMutexRelease(tiltAnglesMutex);
 				drawAngle(rollAngle);
 			}
-			else {
+			else if (tilt_state == 1){
 				osMutexWait(tiltAnglesMutex, (uint32_t) THREAD_TIMEOUT);
 				pitchAngle = pitchValue;
 				osMutexRelease(tiltAnglesMutex);
@@ -120,8 +117,8 @@ void handleKeyPress(void) {
 	if ((key = getKey()) == -1) return;
 	if (key == 0 && key_state == 0) key_state = 1;
 	else if (key == 0 && key_state == 1) key_state = 0;
-	else if (key == 1) tilt_state = 0;
-	else if (key == 2) tilt_state = 1;
+	else if (key_state == 1 && key == 1) tilt_state = 0;
+	else if (key_state == 1 && key == 3) tilt_state = 1;
 		
 	return;
 	

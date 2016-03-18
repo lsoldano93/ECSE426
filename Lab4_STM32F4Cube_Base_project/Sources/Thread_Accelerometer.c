@@ -35,17 +35,11 @@ int start_Thread_Accelerometer (void) {
 void Thread_Accelerometer (void const *argument){
 	
 	osEvent Status_Accelerometer;
-	int counter = 0;
 	// Update accelerometer values when signaled to do so, clear said signal after execution
 	while(1){
 		
 		Status_Accelerometer = osSignalWait((int32_t) THREAD_GREEN_LIGHT, (uint32_t) THREAD_TIMEOUT);
-		counter++;
-		if(counter >= 10) {
-			accelerometer_mode();
-			counter = 0;
-		}
-		
+		accelerometer_mode();
 		
 	}
 	
